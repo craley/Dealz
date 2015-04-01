@@ -22,6 +22,10 @@ body {
 
 }
 
+.carousel-caption {
+    
+}
+
 /* Removes arrows and gradient */
 .right.carousel-control, 
 .left.carousel-control {
@@ -38,4 +42,21 @@ body {
 div.panel-heading {
     font-weight: bold;
     font-size: 18px;
+}
+
+/* Portrait & landscape phone */
+@media (max-width: 480px) {
+    #myCarousel .item {
+        
+    }
+}
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 768px) {
+    
+}
+
+/* Large Desktop */
+@media (min-width: 1200px) {
+    
 }
