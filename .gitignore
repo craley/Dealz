@@ -1,2 +1,4 @@
 # netbeans files
 nbproject/
+config.json
+.gitignore

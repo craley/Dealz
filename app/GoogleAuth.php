@@ -1,7 +1,7 @@
 <?php
 
 /* 
- * API key: AIzaSyAJokOk-vNFqwNFw-TgFMUpvEQwRbpE7DY
+ * API key: 
  */
 
 //require_once 'vendor/google/apiclient/src/Google/Client.php';
@@ -20,8 +20,8 @@ class GoogleAuth {
     public function __construct(Google_Client $googleClient = null) {
         $this->client = $googleClient;
         if($this->client){
-            $this->client->setClientId('961741834099-nv3c7j13nm3fmis23sm1g8g83ctr995l.apps.googleusercontent.com');
-            $this->client->setClientSecret('YMOaxU6CAXfEI_4fDIyg15Z7');
+            $this->client->setClientId('----------------');
+            $this->client->setClientSecret('---------------');
             $this->client->setRedirectUri('http://localhost/Demo/oauth2callback');
             $this->client->setScopes(array(
                 'https://www.googleapis.com/auth/plus.login', 
@@ -43,7 +43,7 @@ class GoogleAuth {
             //$this->setToken($this->client->getAccessToken());
             $token = $this->client->getAccessToken();
             $_SESSION['access_token'] = $token;
-            $this->client->setAccessToken($token);//why set again?
+            $this->client->setAccessToken($token);
             //$this->payload = $this->client->verifyIdToken()->getAttributes()['payload'];
             
             //need to handle failure!

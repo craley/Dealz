@@ -1,9 +1,5 @@
 <?php
 
-function prep(){
-    $public_key = 'AKIAJACUDEE4TO4ETUZA';
-    $private_key = '';   
-}
 
 function aws_signed_request($params, $public_key, $private_key, $associate_tag=NULL, $version='2011-08-01'){
     $region = 'com';

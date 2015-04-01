@@ -2,17 +2,6 @@
 
 /*
  * Amazon Product Api
- * Associates ID: chrisraley24c-20
- * Access Key ID: AKIAIJ6ZXTEB7B3JCE5Q
- * Secret Access Key: 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
- * 
- * 
- * 
- * 
- * not sure what these are for:
- * client id: amzn1.application-oa2-client.810d0d9237394ca3a8ca82732d4eb880
- * client secret: c1e1768a66f27205c8984568253f37663e19701920eed3703bc7eab4eaf3c156
- * 
  * 
  * Operations: ItemSearch, ItemLookup
  * 
@@ -28,8 +17,8 @@
  * http://webservices.amazon.com/onca/xml?
  * Service=AWSECommerceService&
  * Operation=ItemSearch&
- * SubscriptionId=AKIAIJ6ZXTEB7B3JCE5Q&
- * AssociateTag=chrisraley24c-20&
+ * SubscriptionId=-----&
+ * AssociateTag=----&
  * Version=2011-08-01&
  * SearchIndex=Beauty&
  * Condition=New&
@@ -38,8 +27,8 @@
  * 
  * Now, they need to be sorted:
  * 
- * AWSAccessKeyId=AKIAIJ6ZXTEB7B3JCE5Q
- * AssociateTag=chrisraley24c-20
+ * AWSAccessKeyId=---------
+ * AssociateTag=-------
  *  Condition=New
  *  Keywords=kat%20von%20d
  *  Operation=ItemSearch
@@ -51,17 +40,17 @@
  * 
  * String to Sign: GET
  *   webservices.amazon.com/onca/xml
- *   AWSAccessKeyId=AKIAIJ6ZXTEB7B3JCE5Q&AssociateTag=chrisraley24c-20&Condition=New&Keywords=kat%20von%20d&Operation=ItemSearch&ResponseGroup=Images%2CItemAttributes%2COffers&SearchIndex=Beauty&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A41%3A24.000Z&Version=2011-08-01
+ *   AWSAccessKeyId=--------&AssociateTag=--------&Condition=New&Keywords=kat%20von%20d&Operation=ItemSearch&ResponseGroup=Images%2CItemAttributes%2COffers&SearchIndex=Beauty&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A41%3A24.000Z&Version=2011-08-01
  * 
  * Finished signed url:
  * 
- * http://webservices.amazon.com/onca/xml?AWSAccessKeyId=AKIAIJ6ZXTEB7B3JCE5Q&AssociateTag=chrisraley24c-20&Condition=New&Keywords=kat%20von%20d&Operation=ItemSearch&ResponseGroup=Images%2CItemAttributes%2COffers&SearchIndex=Beauty&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A41%3A24.000Z&Version=2011-08-01&Signature=6YMF4A5w56ldzj3sdMX4TM8RbJgoIdFZe4Hs2XpZV0o%3D
+ * http://webservices.amazon.com/onca/xml?AWSAccessKeyId=-------&AssociateTag=------&Condition=New&Keywords=kat%20von%20d&Operation=ItemSearch&ResponseGroup=Images%2CItemAttributes%2COffers&SearchIndex=Beauty&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A41%3A24.000Z&Version=2011-08-01&Signature=---------------
  * 
  */
 
 /*
- *  AWSAccessKeyId=AKIAIJ6ZXTEB7B3JCE5Q
- *  AssociateTag=chrisraley24c-20
+ *  AWSAccessKeyId=-----------------
+ *  AssociateTag=------------------
  *  Condition=New                         Possible: All, New, Used, Refurbished, Collectible
  *  IdType=ASIN                           Possible: ASIN, ISBN, UPC
  *  ItemId=B00SB0RKT0
@@ -74,7 +63,7 @@
  * String to sign:
  *  GET
  *  webservices.amazon.com/onca/xml
- *  AWSAccessKeyId=AKIAIJ6ZXTEB7B3JCE5Q&AssociateTag=chrisraley24c-20&Condition=New&IdType=ASIN&ItemId=B00SB0RKT0&Operation=ItemLookup&ResponseGroup=Images%2CItemAttributes%2COffers&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A57%3A36.000Z&Version=2011-08-01
+ *  AWSAccessKeyId=--------------&AssociateTag=-------------&Condition=New&IdType=ASIN&ItemId=B00SB0RKT0&Operation=ItemLookup&ResponseGroup=Images%2CItemAttributes%2COffers&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A57%3A36.000Z&Version=2011-08-01
  * 
  * 
  */
@@ -150,10 +139,10 @@ function createUri($params){
     $method = 'GET';
     $host = 'webservices.amazon.com';
     $uri = '/onca/xml';
-    $private_key = 'wcv+zRIQY3C3U1gZXdXr/pGysYX3Uw2q8iQTj7cP';
+    $private_key = '-----------------------';
     $params['Service'] = 'AWSECommerceService';
-    $params['AWSAccessKeyId'] = 'AKIAIJ6ZXTEB7B3JCE5Q';
-    $params['AssociateTag'] = 'chrisraley24c-20';
+    $params['AWSAccessKeyId'] = '---------------';
+    $params['AssociateTag'] = '----------------';
     $params['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');
     $params['Version'] = '2011-08-01';
     // sort the parameters
@@ -176,16 +165,16 @@ function createUri($params){
     $request = 'http://'.$host.$uri.'?'.$canonicalized_query.'&Signature='.$signature;
     return $request;
 }
-function getOffers($ASIN, $condition = 'New'){//this works!!!!!!!!!
+function getOffers($ASIN, $condition = 'New'){//use this
     $method = 'GET';
     $host = 'webservices.amazon.com';
     $uri = '/onca/xml';
-    $private_key = 'wcv+zRIQY3C3U1gZXdXr/pGysYX3Uw2q8iQTj7cP';
+    $private_key = '---------------';
     $params = [
-        'AWSAccessKeyId' => 'AKIAIJ6ZXTEB7B3JCE5Q',
+        'AWSAccessKeyId' => '--------------------',
         'ItemId' => $ASIN,
         'Service' => 'AWSECommerceService',
-        'AssociateTag' => 'chrisraley24c-20',
+        'AssociateTag' => '---------------',
         'IdType' => 'ASIN',
         'Timestamp' => gmdate('Y-m-d\TH:i:s\Z'),
         'Version' => '2011-08-01',
@@ -193,16 +182,6 @@ function getOffers($ASIN, $condition = 'New'){//this works!!!!!!!!!
         'Operation' => 'ItemLookup',
         'ResponseGroup' => 'Offers'
     ];
-    // additional parameters
-    //$params['Service'] = 'AWSECommerceService';
-    //$params['AWSAccessKeyId'] = $public_key;
-    // GMT timestamp
-    //$params['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');
-    // API version
-    //$params['Version'] = $version;
-//    if ($associate_tag !== NULL) {
-//        $params['AssociateTag'] = $associate_tag;
-//    }
     
     // sort the parameters
     ksort($params);
@@ -233,9 +212,9 @@ function getOffers($ASIN, $condition = 'New'){//this works!!!!!!!!!
 
 function awsRequest($searchIndex, $keywords, $responseGroup = false, $operation = 'ItemSearch', $pageNumber = 1) {//the encryption fails!!
     $service_url = "http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService";
-    $associate_tag = "chrisraley24c-20";
-    $secret_key = "wcv+zRIQY3C3U1gZXdXr/pGysYX3Uw2q8iQTj7cP";
-    $access_key = "AKIAIJ6ZXTEB7B3JCE5Q";
+    $associate_tag = "--------------";
+    $secret_key = "-----------";
+    $access_key = "--------------";
 
     $request = "$service_url&Operation=$operation&AssociateTag=$associate_tag&SearchIndex=$searchIndex&Keywords=" . urlencode($keywords) . "&ItemPage=$pageNumber";
     //var_dump($request);
@@ -245,7 +224,7 @@ function awsRequest($searchIndex, $keywords, $responseGroup = false, $operation 
     parse_str($request, $parameters);
 
     //add new params
-    $parameters['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');//gmdate("Y-m-dTH:i:sZ");
+    $parameters['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');
     $parameters['Version'] = '2011-08-01';
     $parameters['AWSAccessKeyId'] = $access_key;
     if ($responseGroup) {
