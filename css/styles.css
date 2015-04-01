@@ -1,0 +1,41 @@
+/*
+*
+*/
+
+html, body {
+    height: 100%;
+}
+
+/* Required to push content from under navbar */
+body {
+    padding-top: 70px;
+}
+
+/* Carousel items */
+.item {
+    background: #333;    
+    height: 460px !important;
+}
+
+/*  */
+.carousel {
+
+}
+
+/* Removes arrows and gradient */
+.right.carousel-control, 
+.left.carousel-control {
+    opacity: 0;
+    filter: alpha(opacity=0);
+}
+
+/* Reduce mouse area near input fields */
+.left.carousel-control {
+    width: 3%;
+}
+
+/* Login and Register titles */
+div.panel-heading {
+    font-weight: bold;
+    font-size: 18px;
+}

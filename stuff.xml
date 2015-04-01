@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<ItemLookupResponse xmlns="http://webservices.amazon.com/AWSECommerceService/2011-08-01">
+    <OperationRequest>
+        <RequestId>6b808274-39c6-4b8c-9c1d-0a6b4781f8d2</RequestId>
+        <Arguments>
+            <Argument Name="AWSAccessKeyId" Value="AKIAIJ6ZXTEB7B3JCE5Q"></Argument>
+            <Argument Name="AssociateTag" Value="chrisraley24c-20"></Argument>
+            <Argument Name="Condition" Value="New"></Argument>
+            <Argument Name="IdType" Value="ASIN"></Argument>
+            <Argument Name="ItemId" Value="B00SB0RKT0"></Argument>
+            <Argument Name="Operation" Value="ItemLookup"></Argument>
+            <Argument Name="ResponseGroup" Value="OfferSummary"></Argument>
+            <Argument Name="Service" Value="AWSECommerceService"></Argument>
+            <Argument Name="Timestamp" Value="2015-03-29T03:16:17Z"></Argument>
+            <Argument Name="Version" Value="2011-08-01"></Argument>
+            <Argument Name="Signature" Value="AOFyAwXtilD/sZ8MpA+9S/zIIjX5QpPjJcvoJiuUfJw="></Argument>
+        </Arguments>
+        <RequestProcessingTime>0.0145040000000000</RequestProcessingTime>
+    </OperationRequest>
+    <Items>
+        <Request>
+            <IsValid>True</IsValid>
+            <ItemLookupRequest>
+                <Condition>New</Condition>
+                <IdType>ASIN</IdType>
+                <ItemId>B00SB0RKT0</ItemId>
+                <ResponseGroup>OfferSummary</ResponseGroup>
+                <VariationPage>All</VariationPage>
+            </ItemLookupRequest>
+        </Request>
+        <Item>
+            <ASIN>B00SB0RKT0</ASIN>
+            <OfferSummary>
+                <LowestNewPrice>
+                    <Amount>5999</Amount>
+                    <CurrencyCode>USD</CurrencyCode>
+                    <FormattedPrice>$59.99</FormattedPrice>
+                </LowestNewPrice>
+                <TotalNew>11</TotalNew>
+                <TotalUsed>0</TotalUsed>
+                <TotalCollectible>0</TotalCollectible>
+                <TotalRefurbished>0</TotalRefurbished>
+            </OfferSummary>
+        </Item>
+    </Items>
+</ItemLookupResponse>
