@@ -19,9 +19,9 @@
         <script src="js/libs/bootstrap/js/bootstrap.js"></script>
     </head>
     <body>
-        <nav role="navigation" class="navbar navbar-default navbar-fixed-top">
+        <nav role="navigation" class="navbar navbar-default navbar-fixed-top" id="topbar">
             <div class="container">
-                <a class="navbar-brand" href="/">Deal Watcher</a>
+                <a class="navbar-brand" href="/">Dealz</a>
                 <ul class="nav navbar-nav">
                     <li><a href="#">Home</a></li>
                 </ul>
@@ -44,17 +44,17 @@
                                 <div class="well">
                                     <form>
                                         <div class="form-group">
-                                            <label for="loginUser">Username</label>
-                                            <input type="text" class="form-control" id="loginUser" placeholder="Username" autofocus>
+                                            <label for="userLogin">Username</label>
+                                            <input type="text" class="form-control" id="userLogin" placeholder="Username" autofocus>
                                         </div>
                                         <div class="form-group">
-                                            <label for="loginPassword">Password</label>
-                                            <input type="password" class="form-control" id="loginPassword" placeholder="Password">
+                                            <label for="pswdLogin">Password</label>
+                                            <input type="password" class="form-control" id="pswdLogin" placeholder="Password">
                                         </div>
                                         <div class="checkbox">
                                             <label><input type="checkbox"> Remember me</label>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Login</button>
+                                        <button type="submit" class="btn btn-primary" id="fireLogin">Login</button>
                                     </form>
                                 </div>
                             </div>
@@ -69,21 +69,21 @@
                                 <div class="well">
                                     <form>
                                         <div class="form-group">
-                                            <label for="registerUser">Username</label>
-                                            <input type="text" class="form-control" id="registerUser" placeholder="Username">
+                                            <label for="userRegister">Username</label>
+                                            <input type="text" class="form-control" id="userRegister" placeholder="Username">
                                         </div>
                                         <div class="form-group">
-                                            <label for="registerPassword">Password</label>
-                                            <input type="password" class="form-control" id="registerPassword" placeholder="Password">
+                                            <label for="pswdRegister">Password</label>
+                                            <input type="password" class="form-control" id="pswdRegister" placeholder="Password">
                                         </div>
                                         <div class="form-group">
-                                            <label for="registerEmail">Email</label>
-                                            <input type="email" class="form-control" id="registerEmail" placeholder="Email">
+                                            <label for="emailRegister">Email</label>
+                                            <input type="email" class="form-control" id="emailRegister" placeholder="Email">
                                         </div>
                                         <div class="checkbox">
                                             <label><input type="checkbox"> Remember me</label>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Register</button>
+                                        <button type="submit" class="btn btn-primary" id="fireRegister">Register</button>
                                     </form>
                                 </div>
                             </div>
@@ -105,10 +105,10 @@
         </div>
 
         <!-- Begin vendor login -->
-        <nav role="navigation" class="navbar navbar-default navbar-fixed-bottom">
+        <nav role="navigation" class="navbar navbar-default navbar-fixed-bottom" id="bottombar">
             <div class="container">
                 <ul class="nav nav-pills">
-                    <li><a href="#con2"><span class="glyphicon glyphicon-home"></span> Google</a></li>
+                    <li><a href="#con2"><span class="glyphicon glyphicon-home"></span> Google+</a></li>
                     <li><a href="#con2">Facebook</a></li>
                     <li><a href="#con2">Twitter</a></li>
                 </ul>

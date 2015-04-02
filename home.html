@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--
+Test bench for Home screen.
+-->
+<html>
+    <head>
+        <title>Home</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="js/libs/bootstrap/css/bootstrap.css">
+        <link rel="stylesheet" href="js/libs/bootstrap/css/bootstrap-theme.css">
+        <link rel="stylesheet" href="css/styles.css">
+
+        <script src="js/libs/jquery/jquery.js"></script>
+        <script src="js/libs/bootstrap/js/bootstrap.js"></script>
+    </head>
+    <body>
+        <!-- Attached to main -->
+        <nav role="navigation" class="navbar navbar-default navbar-fixed-top" id="topbar">
+            <div class="container">
+                <!-- class mini thwarts navabar collapse at 768px -->
+                <a class="navbar-brand" href="#">Dealz</a>
+                <ul class="nav navbar-nav mini" id="chooser">
+                    <li><a href="#search">Search</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="#profile">Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container" id="main">
+
+            <!-- Begin search screen -->
+            <div id="searchfield" class="panel panel-default">
+                <div class="panel-heading">
+                    <!-- Filter bar -->
+                    <div class="btn-group" role="group" aria-label="...">
+                        <button type="button" class="btn btn-default">Conditon</button>
+                        <button type="button" class="btn btn-default">Price</button>
+
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                Category
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#">All</a></li>
+                                <li><a href="#">Beauty</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Search bar -->
+                <div class="panel-body">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Keywords...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">Go!</button>
+                        </span>
+                    </div>
+                    
+                    <!-- Results -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">Results</div>
+                        <div class="panel-body">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item">Cras justo odio</a>
+                                <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
+                                <a href="#" class="list-group-item">Morbi leo risus</a>
+                                <a href="#" class="list-group-item">Porta ac consectetur ac</a>
+                                <a href="#" class="list-group-item">Vestibulum at eros</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Begin products screen -->
+            <div id="productfield" class="panel panel-default hide">
+                <div class="panel-body">
+                    <h1>Products</h1>
+                </div>
+            </div>
+
+            <!-- Begin profile screen -->
+            <div id="profilefield" class="panel panel-default hide">
+                <div class="panel-body">
+                    <h1>Profile</h1>
+                </div>
+            </div>
+
+            <!-- Begin profile screen -->
+            <div id="offerfield" class="panel panel-default hide">
+                <div class="panel-body">
+                    <h1>Offers</h1>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Begin vendor login -->
+        <nav role="navigation" class="navbar navbar-default navbar-fixed-bottom" id="bottombar">
+            <div class="container">
+                <ul class="nav nav-pills">
+                    <li><a href="#logout">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <script src="js/app.js"></script>
+    </body>
+</html>

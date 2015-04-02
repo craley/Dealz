@@ -44,6 +44,40 @@ div.panel-heading {
     font-size: 18px;
 }
 
+/* Non-Collapsable Navbar */
+.navbar-nav.mini {
+    margin:0;
+}
+.navbar-nav.mini > li {
+    float:none;
+    display:inline-block;
+    font-weight: bold;
+}
+.navbar-nav.mini > li > a {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+.navbar-nav.mini > li.open > ul.dropdown-menu {
+  position: absolute;
+  border: 1px;
+  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+}
+
+a.navbar-brand {
+    color: orange !important;
+}
+
+/* Area around search box */
+#searchfield {
+    /*background-color: orange !important;*/
+}
+
+/* Push search results down */
+div.input-group {
+    margin-bottom: 15px;
+}
+
 /* Portrait & landscape phone */
 @media (max-width: 480px) {
     #myCarousel .item {
