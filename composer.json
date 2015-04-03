@@ -1,0 +1,8 @@
+{
+    "require": {
+        "google/apiclient": "1.1.*@dev",
+        "aws/aws-sdk-php": "2.*",
+        "twig/twig": "2.0.*@dev",
+        "facebook/php-sdk-v4": "4.1.*@dev"
+    }
+}

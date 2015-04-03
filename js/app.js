@@ -3,28 +3,61 @@
  * Content: main
  * Bottom navbar: bottombar
  */
+//Globals
 
-(function (window, $, undefined) {
+//Google
+/**
+ * Google Sigin Handler
+ * if user not signed in, called when button pressed
+ * if user already signed, this is immediately fired.
+ * dont put:  contentType: 'application/octet-stream; charset=utf-8'  in ajax.
+ */
+function signInCallback(authResult) {
+    if (authResult['status']['signed_in'] && authResult['status']['method'] == 'PROMPT') {
+        //user clicked the button
+        $.ajax({
+            type: 'POST',
+            url: 'services/controller.php',
+            success: App.googleSuccess,
+            data: {
+                action: 'google',
+                code: authResult['code']
+            },
+            dataType: 'html'
+
+        });
+    } else if (authResult['status']['signed_in'] && authResult['status']['method'] == 'AUTO') {
+        //auto login attempt: change to userSnoop
+        $.ajax({
+            type: 'POST',
+            url: 'services/controller.php',
+            success: App.googleSuccess,
+            data: {
+                action: 'google',
+                code: authResult['code']
+            },
+            dataType: 'html'
+
+        });
+    } else if (authResult['error']) {
+        //error
+    }
+    //process the one-time code
+//    if (authResult['code']) {
+//        
+//        //alert('Good:  ' + authResult['code']);
+//    } else if (authResult['error']) {
+//        //possible errs:
+//        //  access_denied: user denied access
+//        //  immediate_failed: could not auto log in user
+//        //alert('Bad:  ' + authResult['error']);
+//    }
+}
+
+
+var App = (function (window, $, undefined) {
     var status = 1;// 1: loginNode, 2: homeNode
-    //
-    //attach hash event listener
-//    window.addEventListener('hashchange', function (e) {
-//        if (window.location.hash == '#con1') {
-//            $('#dump').text('Search');
-//        } else if (window.location.hash == '#con2') {
-//            $('#dump').text('Products');
-//        } else if (window.location.hash == '#con3') {
-//            $('#dump').text('Profile');
-//        }
-//    }, false);
 
-//    $(document).ready(function () {
-//        $('.carousel').each(function () {
-//            $(this).carousel({
-//                interval: false
-//            });
-//        });
-//    });
 
     //Intermediates
     var loginSuccess = function (data) {
@@ -49,8 +82,9 @@
         }
         $.ajax({
             type: "POST",
-            url: 'backend.php',
+            url: 'services/controller.php',
             data: {
+                action: 'login',
                 userLogin: username,
                 pswd: pswd
             },
@@ -81,22 +115,38 @@
             }
         }
     };
-
     //Creation
     var setupLogin = function () {
         $('#fireLogin').click(loginHandler);
         $('#fireRegister').click(registerHandler);
-        $('.carousel').each(function () {
-            $(this).carousel({
-                interval: false
-            });
-        });
+//        $('.carousel').each(function () {
+//            $(this).carousel({
+//                interval: false
+//            });
+//        });
+    };
+    function googleSuccess(html) {
+        loadApp(html);
+        //$('#signinButton').attr('style', 'display: none');
+    }
+    var loadApp = function(content){
+        var holder = $('#main');
+        holder.empty();
+        holder.html(content);
+        //load bars
+        var topList = $('#chooser');
+        topList.empty();
+        topList.html("<li><a href='#search'>Search</a></li><li><a href='#products'>Products</a></li><li><a href='#profile'>Profile</a></li>");
+        var bottomList = $('#bottomload');
+        bottomList.empty();
+        bottomList.html('<li><a href="#logout">Logout</a></li>');
+        setupHome();
     };
 
     var setupHome = function () {
         //set site nav
         //$('#chooser > li').click(siteRouter);
-        
+
         //Primary routing: back button works.
         window.addEventListener('hashchange', function (e) {
             if (window.location.hash == '#search') {
@@ -116,7 +166,14 @@
     };
 
     //testing only
-    //setupLogin();
-    setupHome();
+    setupLogin();
+    //setupHome();
+
+    //public interface
+    return {
+        setupLogin: setupLogin,
+        setupHome: setupHome,
+        googleSuccess: googleSuccess
+    };
 
 })(window, jQuery);
