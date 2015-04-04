@@ -6,7 +6,13 @@
  * and open the template in the editor.
  */
 
+$test = 'my french cat';
+//echo str_replace(' ', '_', $test);
 
+function gear($a = 2, $b = 1){
+    echo "a: $a  and b: $b";
+}
+gear(2, 44);
 
 function parseXml($file){
     require_once 'stuff.xml';
@@ -23,4 +29,4 @@ function parseConfig(){
     }
 }
 
-parseXml('stuff.xml');
+//parseXml('stuff.xml');

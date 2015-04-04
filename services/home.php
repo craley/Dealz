@@ -4,6 +4,8 @@
         <div class="btn-group" role="group" aria-label="...">
             <button type="button" class="btn btn-default">Conditon</button>
             <button type="button" class="btn btn-default">Price</button>
+            
+            <input type="hidden" value="" id="currentPage">
 
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">

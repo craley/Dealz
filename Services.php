@@ -77,9 +77,9 @@
 
 //$uri = getOffers('B00SB0RKT0');
 
-$uri = itemSearch('Kat_Von_D', 'New', 'Beauty');
-$snag = send($uri);
-echo $snag;
+//$uri = itemSearch('Kat_Von_D', 'New', 'Beauty');
+//$snag = send($uri);
+//echo $snag;
 
 function send($uri){
     $curl = curl_init();
@@ -98,17 +98,104 @@ function readXml($xstring){
     $lowest = $data->Items->Item->OfferSummary->LowestNewPrice->Amount;
 }
 /*
- * keywords: string
+ * Performs a query against the Amazon database.
+ * 
+ * Keywords(Optional): string with spaces ok(they are converted to underscore)
+ * Condition: New, Used, All
+ * Category: All, Books, Beauty, Electronics, ...
+ * Requested Page: string like '1'
+ * Minimum Price: string '3241' is $32.41 default: None
+ * Maximum Price: same
  * ItemPage => '3' to get page 3
+ * 
+ * Usage: Associative Array
+ *   itemSearch(['keyword' => 'Kat Von D', 'page' => 3]);
+ *   itemSearch(['keyword' => 'Kat Von D', 'page' => 3]);
+ * 
+ * Constraints: Search must utilize either a keyword or a category.
  */
-function itemSearch($keywords, $condition = 'New', $category = 'All') {
+function itemSearch($params) {
+    //Must be at least 1 parameter specified.
+    if(!isset($params) || empty($params)){
+        return "No params specified";
+    }
+    $condition = 'All';
+    $category = 'All';
+    $page = 1;
+    $min = 'None';
+    $max = 'None';
+    if(!isset($params['keyword']) || empty($params['keyword'])){
+        //if no keyword, then there must be at least 1 param
+        //that differs from the defaults
+        if(!isset($params['category']) || empty($params['category'])){
+            
+        }
+    }
+    if(isset($params['condition']) && !empty($params['condition'])){
+        $condition = $params['condition'];
+    }
+    if(isset($params['category']) && !empty($params['category'])){
+        $category = $params['category'];
+    }
+    if(isset($params['page']) && !empty($params['page'])){
+        $page = $params['page'];
+    }
+    if(isset($params['min']) && !empty($params['min'])){
+        $min = $params['min'];
+    }
+    if(isset($params['max']) && !empty($params['max'])){
+        $max = $params['max'];
+    }
     
     $params = [
         'Operation' => 'ItemSearch',
         'SearchIndex' => $category,
-        'Keywords' => rawurlencode($keywords)
+        'Condition' => $condition,
+        'ItemPage' => (string)$page,
+        'MinimumPrice' => $min,
+        'MaximumPrice' => $max
     ];
+    if(isset($params['keyword']) && !empty($params['keyword'])){
+        $params['Keywords'] = rawurlencode(str_replace(' ', '_', $params['keyword']));
+    }
+    
     return createUri($params);
+}
+//test itemSearch:
+//$uri = itemSearch('Kat Von D');
+//$snag = send($uri);
+//echo $snag;
+$d = processSearchResults(NULL);
+//echo $d['items'][0]['title'];
+echo count($d['items']);
+
+//Process Search Results: open new tab to follow link!
+function processSearchResults($res){
+//    if(!isset($res) || empty($res)){
+//        return "Empty";
+//    }
+    $data = [];
+    //$xml = simplexml_load_string($xstring);
+    $xml = simplexml_load_file('searchData.xml');
+    if($xml->Items->Request->IsValid){
+        $data['page'] = $xml->Items->Request->ItemSearchRequest->ItemPage;
+        $data['totalResults'] = $xml->Items->TotalResults;
+        $data['totalPages'] = $xml->Items->TotalPages;
+        $count = 0;
+        $data['items'] = [];
+        foreach($xml->Items->Item as $item){
+            $row['asin'] = $item->ASIN;
+            $row['title'] = $item->ItemAttributes->Title;
+            $row['manufacturer'] = $item->ItemAttributes->Manufacturer;
+            $row['url'] = $item->DetailPageURL;
+            
+            array_push($data['items'], $row);
+        }
+        return $data;
+    }
+}
+function showSearch($data){
+    echo "Page: " . $data['page'] . "br/>";
 }
 
 function itemLookup($ASIN, $condition = 'New') {
@@ -136,13 +223,16 @@ function getDeals($ASIN){
  *  needs: ResponseGroup
  */
 function createUri($params){
+    //acquire keys
+    $config = json_decode(file_get_contents('config.json'), true);
+    
     $method = 'GET';
     $host = 'webservices.amazon.com';
     $uri = '/onca/xml';
-    $private_key = '-----------------------';
+    $private_key = $config['amazonSecret'];
     $params['Service'] = 'AWSECommerceService';
-    $params['AWSAccessKeyId'] = '---------------';
-    $params['AssociateTag'] = '----------------';
+    $params['AWSAccessKeyId'] = $config['amazonAccessKey'];
+    $params['AssociateTag'] = $config['associateKey'];
     $params['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');
     $params['Version'] = '2011-08-01';
     // sort the parameters

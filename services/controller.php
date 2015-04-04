@@ -69,7 +69,7 @@ if ($action == 'login') {
         //$gplus_id = $attribs['payload']['sub'];
         //save token
         session_start();
-        $_SESSION['token'] = json_encode(token);
+        $_SESSION['token'] = json_encode($token);
 
         $userProfile = $plus->people->get('me');
         $emails = $userProfile->getEmails();
