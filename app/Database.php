@@ -31,15 +31,15 @@ class Query {
 
 class Database {
 
-    //const DB_SERVER = "127.0.0.1";
-    //const DB_USER = "root";
-    //const DB_PASSWORD = "0324";
-    //const DB_NAME = "demodb";
+    const DB_SERVER = "127.0.0.1";
+    const DB_USER = "root";
+    const DB_PASSWORD = "0324";
+    const DB_NAME = "demodb";
     
-    const DB_SERVER = "chrisraley24.com";
-    const DB_USER = "www_data";
-    const DB_PASSWORD = "tuna0324";
-    const DB_NAME = "cr_demodb";
+//    const DB_SERVER = "chrisraley24.com";
+//    const DB_USER = "www_data";
+//    const DB_PASSWORD = "tuna0324";
+//    const DB_NAME = "cr_demodb";
     
     const NO_OP = null;
 

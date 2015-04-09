@@ -63,7 +63,7 @@ var App = (function (window, $, undefined) {
     var status = 1;// 1: loginNode, 2: homeNode
 
 
-    //Intermediates
+    //Callbacks
     var loginSuccess = function (data) {
         loadApp(data);
     };
@@ -118,6 +118,7 @@ var App = (function (window, $, undefined) {
                 $('#profilefield').removeClass('hide');
             }
         }
+        return false;
     };
     //Creation
     var setupLogin = function () {
@@ -128,7 +129,7 @@ var App = (function (window, $, undefined) {
 //                interval: false
 //            });
 //        });
-        window.history.replaceState({}, 'title', 'login');
+        window.history.replaceState({page:'login'}, 'title', 'login');
         window.addEventListener('popstate', stateChange, false);
     };
     function googleSuccess(html) {
@@ -145,28 +146,49 @@ var App = (function (window, $, undefined) {
         //load bars
         var topList = $('#chooser');
         topList.empty();
-        topList.html("<li><a href='#search'>Search</a></li><li><a href='#products'>Products</a></li><li><a href='#profile'>Profile</a></li>");
+        //topList.html("<li><a href='#search'>Search</a></li><li><a href='#products'>Products</a></li><li><a href='#profile'>Profile</a></li>");
+        topList.html("<li><a id='1' href>Search</a></li><li><a id='2' href>Products</a></li><li><a id='3' href>Profile</a></li>");
+        //topList.html("<li><button type='button'>Search</button></li><li><button>Products</button></li><li><button>Profile</button></li>");
         var bottomList = $('#bottomload');
         bottomList.empty();
-        bottomList.html('<li><a href="#logout" id="fireLogout">Logout</a></li>');
+        bottomList.html('<li><a href id="fireLogout">Logout</a></li>');
         $('#fireLogout').on('click', logoutHandler);
         setupHome();
         //display a different url
         var path = 'dealz';
-        window.history.pushState({id: 'home'}, 'title', path);
+        window.history.pushState({page: path}, 'title', path);
         //$(window).on('popstate', stateChange);
         
     };
+    //fired when user presses 'Back'
     var stateChange = function(e){
+        if(!e.state) return;
         var loc = document.location;
-        var state = JSON.stringify(e.state);
-        console.log('Loc: ' + loc + ', state: ' + state);
+        var state = e.state;
+        console.log('Loc: ' + loc + ', state: ' + state.page);
+        if(state.page == 'login'){
+            reloadLogin();
+        }
     };
-    var logoutHandler = function(){
+    var reloadLogin = function(){
+        var topList = $('#chooser');
+        topList.empty();
+        topList.html('<li><a href="#">Home</a></li>');
         var holder = $('#main');
         //blow it away
         holder.empty();
+        //push login
         loginComponent.appendTo(holder);
+        var bottomList = $('#bottomload');
+        bottomList.empty();
+        bottomList.html(googleButton);
+    };
+    var googleButton = "<li><div id='signinButton'><span class='g-signin' data-scope='https://www.googleapis.com/auth/plus.login' " + 
+            "data-clientid='961741834099-nv3c7j13nm3fmis23sm1g8g83ctr995l.apps.googleusercontent.com' " + 
+            "data-redirecturi='postmessage' data-accesstype='offline' data-cookiepolicy='single_host_origin' " +
+            "data-callback='signInCallback'></span></div></li>";
+    var logoutHandler = function(){
+        reloadLogin();
     };
     var searchSuccess = function(data){
         var holder = $('#searchload');
@@ -176,7 +198,9 @@ var App = (function (window, $, undefined) {
         
     };
     var searchFailure = function(){
-        
+        var holder = $('#searchload');
+        holder.empty();
+        holder.html('No Results Found');
     };
     //Search button
     var category;
@@ -207,24 +231,24 @@ var App = (function (window, $, undefined) {
 
     var setupHome = function () {
         //set site nav
-        //$('#chooser > li').click(siteRouter);
+        $('#chooser li a').click(siteRouter);
 
         //Primary routing: back button works.
-        window.addEventListener('hashchange', function (e) {
-            if (window.location.hash == '#search') {
-                $('#productfield').addClass('hide');
-                $('#profilefield').addClass('hide');
-                $('#searchfield').removeClass('hide');
-            } else if (window.location.hash == '#products') {
-                $('#searchfield').addClass('hide');
-                $('#profilefield').addClass('hide');
-                $('#productfield').removeClass('hide');
-            } else if (window.location.hash == '#profile') {
-                $('#productfield').addClass('hide');
-                $('#searchfield').addClass('hide');
-                $('#profilefield').removeClass('hide');
-            }
-        }, false);
+//        window.addEventListener('hashchange', function (e) {
+//            if (window.location.hash == '#search') {
+//                $('#productfield').addClass('hide');
+//                $('#profilefield').addClass('hide');
+//                $('#searchfield').removeClass('hide');
+//            } else if (window.location.hash == '#products') {
+//                $('#searchfield').addClass('hide');
+//                $('#profilefield').addClass('hide');
+//                $('#productfield').removeClass('hide');
+//            } else if (window.location.hash == '#profile') {
+//                $('#productfield').addClass('hide');
+//                $('#searchfield').addClass('hide');
+//                $('#profilefield').removeClass('hide');
+//            }
+//        }, false);
         $('#queryFire').click(queryHandler);
         $('#queryCond li a').on('click', function(e){
             condition = $(this).text();

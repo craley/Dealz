@@ -76,6 +76,10 @@ a.navbar-brand {
 #searchTable td {
     
 }
+#errmsg {
+    color: red !important;
+    font-size: 1.2em;
+}
 
 /* Push search results down */
 div.input-group {
