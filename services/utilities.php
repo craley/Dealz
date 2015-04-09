@@ -1,8 +1,6 @@
 <?php
 
 /*
- * 9044155045
- * traciwelden@gmail.com
  * TMobile: tmomail.net
  * Verizon: vtext.com
  */
@@ -25,9 +23,7 @@ function sendText($number, $carrier, $subject, $message) {
         }
     }
 }
-$traci = '9044155045';
-$chris = '9044343696';
-//sendText($traci, 'tmobile', 'pimp', 'im a fucking machine!!!!');
+//sendText($tci, 'tmobile', 'pimp', 'im a machine!!!!');
 
 function sendEmail($dest, $subject, $message){
     if(isset($dest) && isset($message)){
@@ -52,6 +48,16 @@ function parseConfig(){
             
         }
     }
+}
+function getDatabaseCredentials(){
+    $config = json_decode(file_get_contents('../config.json'));
+    return [ 
+        'dsn' => $config->db_dsn, 
+        'host' => $config->db_host,
+        'user' => $config->db_user,
+        'pswd' => $config->db_pswd,
+        'database' => $config->db_name 
+    ];
 }
 
 //Amazon

@@ -1,3 +1,8 @@
 # netbeans files
-nbproject/
+nbproject/*
 config.json
+stuff.xml
+searchData.xml
+composer.lock
+test/*
+dbtest.php

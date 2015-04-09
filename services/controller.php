@@ -34,22 +34,56 @@ if ($action == 'login') {
             session_start();
             $_SESSION['uid'] = $uid;
             $_SESSION['username'] = $_POST['userLogin'];
-            //header('Location: /Demo/home');
             require_once 'home.php';
             exit();
         }
     }
     header("HTTP/1.1 404 Not Found");
 } elseif ($action == 'register') {
-    
+    if (isset($_POST['userLogin']) && isset($_POST['pswd']) && isset($_POST['email']) && !empty($_POST['userLogin']) && !empty($_POST['pswd']) && !empty($_POST['email'])) {
+        require_once '../app/Database.php';
+        $uid = -1;
+        require_once 'app/Database.php';
+        /*
+         * The access key is really the email. Only it must
+         * be unique.
+         */
+        if(\app\db\Database::isUserUnique($user, $email)){
+            //new person, just add them
+            \app\db\Database::insertUser($user, $pswd, $email);
+            $uid = \app\db\Database::validateUser($user, $pswd);
+            
+            session_start();
+            $_SESSION['uid'] = $uid;
+            $_SESSION['username'] = $user;
+            require_once 'home.php';
+            exit();
+        } elseif(!\app\db\Database::isUserNameUnique($username)) {//change to email, same usernames ok
+            //username is not unique
+            require_once 'home.php';
+            exit();
+        } else {
+            //have unique username, but email exists
+            //have they already set a username and pswd?
+            $uInfo = \app\db\Database::getUserInfoByEmail($email);
+            //temporary fixx, just overwrite any existing username, pswd
+            \app\db\Database::appendUserPswd($email, $user, $pswd);
+            //create All category
+            \app\db\Database::createAllCategory($uInfo['uid']);
+            session_start();
+            $_SESSION['uid'] = $uInfo['uid'];
+            $_SESSION['username'] = $uInfo['username'];
+            require_once 'home.php';
+            exit();
+        }
+    }
+    header("HTTP/1.1 404 Not Found");
 } elseif ($action == 'google') {
     //$code = explode(",", file_get_contents('php://input'));
 
     if (isset($_POST['code'])) {
         $config = json_decode(file_get_contents('../config.json'));
         $client = new Google_Client();
-        //$client->setClientId('961741834099-nv3c7j13nm3fmis23sm1g8g83ctr995l.apps.googleusercontent.com');
-        //$client->setClientSecret('YMOaxU6CAXfEI_4fDIyg15Z7');
         $client->setClientId($config->googleClientId);
         $client->setClientSecret($config->googleClientSecret);
 

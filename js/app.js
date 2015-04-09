@@ -60,18 +60,8 @@ function signInCallback(authResult) {
 
 //create global footprint for external callbacks.
 var App = (function (window, $, undefined) {
-    var status = 1;// 1: loginNode, 2: homeNode
-
-
-    //Callbacks
-    var loginSuccess = function (data) {
-        loadApp(data);
-    };
-    var loginFailure = function () {
-        $('#errmsg').text('Invalid Credentials');
-    };
-
-    //Handlers
+    
+    //Login Handler
     var loginHandler = function (e) {
         var username = $('#userLogin').val();
         var pswd = $('#pswdLogin').val();
@@ -97,10 +87,56 @@ var App = (function (window, $, undefined) {
             dataType: 'html'
         });
     };
-    var registerHandler = function (e) {
-
+    //Login Callbacks
+    var loginSuccess = function (data) {
+        loadApp(data);
     };
-    //Backup client routing: Back button does not work here
+    var loginFailure = function () {
+        $('#errmsgLogin').text('Invalid Credentials');
+    };
+    
+    //Register Handler
+    var registerHandler = function (e) {
+        var username = $('#userRegister').val();
+        var pswd = $('#pswdRegister').val();
+        var email = $('#emailRegister').val();
+        if(!username){
+            alert("Must provide a username");
+            $('#userRegister').focus();
+            return;
+        } else if(!pswd){
+            alert("Must provide a password");
+            $('#pswdRegister').focus();
+            return;
+        } else if(!email){
+            alert("Must provide an email");
+            $('#emailRegister').focus();
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: 'services/controller.php',
+            data: {
+                action: 'register',
+                userLogin: username,
+                pswd: pswd,
+                email: email
+            },
+            success: registerSuccess,
+            error: registerFailure,
+            dataType: 'html'
+        });
+    };
+    //Register Callbacks
+    var registerSuccess = function(data){
+        loadApp(data);
+    };
+    var registerFailure = function(){
+        $('#errmsgRegister').text('Invalid Credentials');
+    };
+    
+    
+    //Home Screen Navigation: does not affect Back button
     var siteRouter = function (e) {
         if (e.target) {
             var ident = e.target.id;
@@ -120,21 +156,9 @@ var App = (function (window, $, undefined) {
         }
         return false;
     };
-    //Creation
-    var setupLogin = function () {
-        $('#fireLogin').click(loginHandler);
-        $('#fireRegister').click(registerHandler);
-//        $('.carousel').each(function () {
-//            $(this).carousel({
-//                interval: false
-//            });
-//        });
-        window.history.replaceState({page:'login'}, 'title', 'login');
-        window.addEventListener('popstate', stateChange, false);
-    };
+    
     function googleSuccess(html) {
         loadApp(html);
-        //$('#signinButton').attr('style', 'display: none');
     }
     var loginComponent;
     var loadApp = function(content){
@@ -148,9 +172,8 @@ var App = (function (window, $, undefined) {
         topList.empty();
         //topList.html("<li><a href='#search'>Search</a></li><li><a href='#products'>Products</a></li><li><a href='#profile'>Profile</a></li>");
         topList.html("<li><a id='1' href>Search</a></li><li><a id='2' href>Products</a></li><li><a id='3' href>Profile</a></li>");
-        //topList.html("<li><button type='button'>Search</button></li><li><button>Products</button></li><li><button>Profile</button></li>");
         var bottomList = $('#bottomload');
-        bottomList.empty();
+        $('#signinButton').attr('style', 'display: none');
         bottomList.html('<li><a href id="fireLogout">Logout</a></li>');
         $('#fireLogout').on('click', logoutHandler);
         setupHome();
@@ -165,7 +188,7 @@ var App = (function (window, $, undefined) {
         if(!e.state) return;
         var loc = document.location;
         var state = e.state;
-        console.log('Loc: ' + loc + ', state: ' + state.page);
+        //console.log('Loc: ' + loc + ', state: ' + state.page);
         if(state.page == 'login'){
             reloadLogin();
         }
@@ -179,14 +202,11 @@ var App = (function (window, $, undefined) {
         holder.empty();
         //push login
         loginComponent.appendTo(holder);
-        var bottomList = $('#bottomload');
-        bottomList.empty();
-        bottomList.html(googleButton);
+        //deactivate logout button
+        $('#fireLogout').attr('style', 'display: none');
+        $('#signinButton').attr('style', 'display: block');
     };
-    var googleButton = "<li><div id='signinButton'><span class='g-signin' data-scope='https://www.googleapis.com/auth/plus.login' " + 
-            "data-clientid='961741834099-nv3c7j13nm3fmis23sm1g8g83ctr995l.apps.googleusercontent.com' " + 
-            "data-redirecturi='postmessage' data-accesstype='offline' data-cookiepolicy='single_host_origin' " +
-            "data-callback='signInCallback'></span></div></li>";
+    
     var logoutHandler = function(){
         reloadLogin();
     };
@@ -228,12 +248,25 @@ var App = (function (window, $, undefined) {
             dataType: 'html'
         });
     };
-
+    
+    /*
+     * Page Creation
+     */
+    
+    //Setup Login Screen
+    var setupLogin = function () {
+        $('#fireLogin').click(loginHandler);
+        $('#fireRegister').click(registerHandler);
+        window.history.replaceState({page:'login'}, 'title', 'login');
+        window.addEventListener('popstate', stateChange, false);
+    };
+    
+    //Setup Home Screen
     var setupHome = function () {
         //set site nav
         $('#chooser li a').click(siteRouter);
 
-        //Primary routing: back button works.
+        //Primary routing via hashchange: back button works.
 //        window.addEventListener('hashchange', function (e) {
 //            if (window.location.hash == '#search') {
 //                $('#productfield').addClass('hide');
@@ -252,19 +285,16 @@ var App = (function (window, $, undefined) {
         $('#queryFire').click(queryHandler);
         $('#queryCond li a').on('click', function(e){
             condition = $(this).text();
-            console.log(condition);
         });
         $('#queryCategory li a').on('click', function(e){
             category = $(this).text();
-            console.log(category);
         });
     };
 
     //testing only
     setupLogin();
-    //setupHome();
 
-    //public interface
+    //public interface for 3rd party vendors
     return {
         setupLogin: setupLogin,
         setupHome: setupHome,

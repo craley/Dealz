@@ -76,7 +76,11 @@ a.navbar-brand {
 #searchTable td {
     
 }
-#errmsg {
+#errmsgLogin {
+    color: red !important;
+    font-size: 1.2em;
+}
+#errmsgRegister {
     color: red !important;
     font-size: 1.2em;
 }
