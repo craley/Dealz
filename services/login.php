@@ -52,6 +52,7 @@ php template for login screen.
                                             <label><input type="checkbox"> Remember me</label>
                                         </div>
                                         <button type="submit" class="btn btn-primary" id="fireLogin">Login</button>
+                                        <span id="errmsg"></span>
                                     </form>
                                 </div>
                             </div>

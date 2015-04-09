@@ -2,6 +2,10 @@
  * Top navbar: topbar
  * Content: main
  * Bottom navbar: bottombar
+ * 
+ * Navigation:
+ *  Login -> Home
+ *  ** Back button should leave?
  */
 //Globals
 
@@ -28,17 +32,17 @@ function signInCallback(authResult) {
         });
     } else if (authResult['status']['signed_in'] && authResult['status']['method'] == 'AUTO') {
         //auto login attempt: change to userSnoop
-        $.ajax({
-            type: 'POST',
-            url: 'services/controller.php',
-            success: App.googleSuccess,
-            data: {
-                action: 'google',
-                code: authResult['code']
-            },
-            dataType: 'html'
-
-        });
+//        $.ajax({
+//            type: 'POST',
+//            url: 'services/controller.php',
+//            success: App.googleSuccess,
+//            data: {
+//                action: 'google',
+//                code: authResult['code']
+//            },
+//            dataType: 'html'
+//
+//        });
     } else if (authResult['error']) {
         //error
     }
@@ -54,17 +58,17 @@ function signInCallback(authResult) {
 //    }
 }
 
-
+//create global footprint for external callbacks.
 var App = (function (window, $, undefined) {
     var status = 1;// 1: loginNode, 2: homeNode
 
 
     //Intermediates
     var loginSuccess = function (data) {
-
+        loadApp(data);
     };
     var loginFailure = function () {
-
+        $('#errmsg').text('Invalid Credentials');
     };
 
     //Handlers
@@ -124,14 +128,19 @@ var App = (function (window, $, undefined) {
 //                interval: false
 //            });
 //        });
+        window.history.replaceState({}, 'title', 'login');
+        window.addEventListener('popstate', stateChange, false);
     };
     function googleSuccess(html) {
         loadApp(html);
         //$('#signinButton').attr('style', 'display: none');
     }
+    var loginComponent;
     var loadApp = function(content){
         var holder = $('#main');
-        holder.empty();
+        //holder.empty();//blow login away
+        loginComponent = holder.children().detach();//save children
+        
         holder.html(content);
         //load bars
         var topList = $('#chooser');
@@ -139,8 +148,61 @@ var App = (function (window, $, undefined) {
         topList.html("<li><a href='#search'>Search</a></li><li><a href='#products'>Products</a></li><li><a href='#profile'>Profile</a></li>");
         var bottomList = $('#bottomload');
         bottomList.empty();
-        bottomList.html('<li><a href="#logout">Logout</a></li>');
+        bottomList.html('<li><a href="#logout" id="fireLogout">Logout</a></li>');
+        $('#fireLogout').on('click', logoutHandler);
         setupHome();
+        //display a different url
+        var path = 'dealz';
+        window.history.pushState({id: 'home'}, 'title', path);
+        //$(window).on('popstate', stateChange);
+        
+    };
+    var stateChange = function(e){
+        var loc = document.location;
+        var state = JSON.stringify(e.state);
+        console.log('Loc: ' + loc + ', state: ' + state);
+    };
+    var logoutHandler = function(){
+        var holder = $('#main');
+        //blow it away
+        holder.empty();
+        loginComponent.appendTo(holder);
+    };
+    var searchSuccess = function(data){
+        var holder = $('#searchload');
+        holder.empty();
+        holder.html(data);
+        //attach track button listeners.
+        
+    };
+    var searchFailure = function(){
+        
+    };
+    //Search button
+    var category;
+    var condition;
+    var page;
+    var queryHandler = function(e){
+        //gather query params
+        var keyword = $('#keywords').val();
+        var cat = category || 'All';
+        var cond = condition || 'All';
+        var pg = page || 1;
+        if(!keyword) return;
+        $.ajax({
+            type: "GET",
+            url: 'services/controller.php',
+            data: {
+                action: 'query',
+                keyword: keyword,
+                category: cat,
+                page: pg,
+                condition: cond
+            },
+            success: searchSuccess,
+            error: searchFailure,
+            dataType: 'html'
+        });
     };
 
     var setupHome = function () {
@@ -163,6 +225,15 @@ var App = (function (window, $, undefined) {
                 $('#profilefield').removeClass('hide');
             }
         }, false);
+        $('#queryFire').click(queryHandler);
+        $('#queryCond li a').on('click', function(e){
+            condition = $(this).text();
+            console.log(condition);
+        });
+        $('#queryCategory li a').on('click', function(e){
+            category = $(this).text();
+            console.log(category);
+        });
     };
 
     //testing only

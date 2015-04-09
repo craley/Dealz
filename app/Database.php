@@ -31,10 +31,15 @@ class Query {
 
 class Database {
 
-    const DB_SERVER = "127.0.0.1";
-    const DB_USER = "root";
-    const DB_PASSWORD = "0324";
-    const DB_NAME = "demodb";
+    //const DB_SERVER = "127.0.0.1";
+    //const DB_USER = "root";
+    //const DB_PASSWORD = "0324";
+    //const DB_NAME = "demodb";
+    
+    const DB_SERVER = "chrisraley24.com";
+    const DB_USER = "www_data";
+    const DB_PASSWORD = "tuna0324";
+    const DB_NAME = "cr_demodb";
     
     const NO_OP = null;
 
@@ -298,7 +303,7 @@ class Database {
             $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); //only for testing purposes.
             $salt = self::generateRandomSalt();
 
-            $pstmt = $conn->prepare("INSERT INTO members VALUES(NULL, :user, NULL, NULL, :email, :digest, :salt)"); //auto-increment requires NULL
+            $pstmt = $conn->prepare("INSERT INTO members VALUES(NULL, :user, NULL, NULL, :email, :digest, :salt, NULL, NULL)"); //auto-increment requires NULL
             //$pstmt->execute(array(':user' => $username, ':digest' => md5($password . $salt), ':salt' => $salt));
 
             $pstmt->bindValue(":user", $username);

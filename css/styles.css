@@ -73,6 +73,10 @@ a.navbar-brand {
     /*background-color: orange !important;*/
 }
 
+#searchTable td {
+    
+}
+
 /* Push search results down */
 div.input-group {
     margin-bottom: 15px;

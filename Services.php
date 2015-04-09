@@ -127,9 +127,7 @@ function itemSearch($params) {
     if(!isset($params['keyword']) || empty($params['keyword'])){
         //if no keyword, then there must be at least 1 param
         //that differs from the defaults
-        if(!isset($params['category']) || empty($params['category'])){
-            
-        }
+        return;
     }
     if(isset($params['condition']) && !empty($params['condition'])){
         $condition = $params['condition'];
@@ -147,27 +145,33 @@ function itemSearch($params) {
         $max = $params['max'];
     }
     
-    $params = [
+    $query = [
         'Operation' => 'ItemSearch',
         'SearchIndex' => $category,
         'Condition' => $condition,
         'ItemPage' => (string)$page,
         'MinimumPrice' => $min,
-        'MaximumPrice' => $max
+        'MaximumPrice' => $max,
+        'ResponseGroup' => 'Small,Images'
     ];
     if(isset($params['keyword']) && !empty($params['keyword'])){
-        $params['Keywords'] = rawurlencode(str_replace(' ', '_', $params['keyword']));
+        $query['Keywords'] = rawurlencode(str_replace(' ', '_', $params['keyword']));
     }
     
-    return createUri($params);
+    return createUri($query);
 }
 //test itemSearch:
-//$uri = itemSearch('Kat Von D');
-//$snag = send($uri);
-//echo $snag;
-$d = processSearchResults(NULL);
+$uri = itemSearch(['keyword' => 'html5']);
+//echo $uri;
+$snag = send($uri);
+echo $snag;
+
+//$d = processSearchResults(NULL);
 //echo $d['items'][0]['title'];
-echo count($d['items']);
+//echo $d['items'][0]['image'];
+//echo $d['items'][0]['img_width'];
+//echo count($d['items']);
+
 
 //Process Search Results: open new tab to follow link!
 function processSearchResults($res){
@@ -176,18 +180,21 @@ function processSearchResults($res){
 //    }
     $data = [];
     //$xml = simplexml_load_string($xstring);
-    $xml = simplexml_load_file('searchData.xml');
+    $xml = simplexml_load_file('stuff.xml');
     if($xml->Items->Request->IsValid){
         $data['page'] = $xml->Items->Request->ItemSearchRequest->ItemPage;
         $data['totalResults'] = $xml->Items->TotalResults;
         $data['totalPages'] = $xml->Items->TotalPages;
-        $count = 0;
+        
         $data['items'] = [];
         foreach($xml->Items->Item as $item){
             $row['asin'] = $item->ASIN;
             $row['title'] = $item->ItemAttributes->Title;
             $row['manufacturer'] = $item->ItemAttributes->Manufacturer;
             $row['url'] = $item->DetailPageURL;
+            $row['image'] = $item->SmallImage->URL;
+            $row['img_width'] = $item->SmallImage->Width;
+            $row['img_height'] = $item->SmallImage->Height;
             
             array_push($data['items'], $row);
         }

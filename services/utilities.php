@@ -45,7 +45,7 @@ function parseXml($file){
     echo "<br/>" . $data->Items->Item->OfferSummary->LowestNewPrice->Amount;
 }
 function parseConfig(){
-    $data = file_get_contents("config.json");
+    $data = file_get_contents("../config.json");
     $json = json_decode($data, true);//true converts objs to assoc arrays
     foreach($json as $key => $value){
         if(!is_array($value)){
@@ -54,4 +54,159 @@ function parseConfig(){
     }
 }
 
-//parseXml('../stuff.xml');
+//Amazon
+
+function conductProductSearch($params){
+    //construct request uri
+    $uri = createItemSearchRequest($params);
+    if(empty($uri)) return null;
+    $xml = send($uri);
+    if(empty($xml)) return null;
+    return processSearchResults($xml);
+}
+
+function send($uri){
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_RETURNTRANSFER => 1,
+        CURLOPT_URL => $uri
+    ));
+    $response = curl_exec($curl);
+    curl_close($curl);
+    return $response;
+}
+
+/**
+ * echo $d['items'][0]['image'];
+ * echo $d['items'][0]['img_width']
+ * @param type $res
+ * @return array
+ */
+function processSearchResults($res){
+    if(!isset($res) || empty($res)){
+        return "Empty";
+    }
+    $data = [];
+    $xml = simplexml_load_string($res);
+    //$xml = simplexml_load_file('../stuff.xml');
+    if($xml->Items->Request->IsValid){
+        $data['page'] = $xml->Items->Request->ItemSearchRequest->ItemPage;
+        $data['totalResults'] = $xml->Items->TotalResults;
+        $data['totalPages'] = $xml->Items->TotalPages;
+        
+        $data['items'] = [];
+        foreach($xml->Items->Item as $item){
+            $row['asin'] = $item->ASIN;
+            $row['title'] = $item->ItemAttributes->Title;
+            $row['manufacturer'] = $item->ItemAttributes->Manufacturer;
+            $row['url'] = $item->DetailPageURL;
+            $row['image'] = $item->SmallImage->URL;
+            $row['img_width'] = $item->SmallImage->Width;
+            $row['img_height'] = $item->SmallImage->Height;
+            
+            array_push($data['items'], $row);
+        }
+        return $data;
+    }
+}
+
+/*
+ * Performs a query against the Amazon database.
+ * 
+ * Keywords(Optional): string with spaces ok(they are converted to underscore)
+ * Condition: New, Used, All
+ * Category: All, Books, Beauty, Electronics, ...
+ * Requested Page: string like '1'
+ * Minimum Price: string '3241' is $32.41 default: None
+ * Maximum Price: same
+ * ItemPage => '3' to get page 3
+ * 
+ * Usage: Associative Array
+ *   itemSearch(['keyword' => 'Kat Von D', 'page' => 3]);
+ *   itemSearch(['keyword' => 'Kat Von D', 'page' => 3]);
+ * 
+ * Constraints: Search must utilize either a keyword or a category.
+ */
+function createItemSearchRequest($params) {
+    //Must be at least 1 parameter specified.
+    if(!isset($params) || empty($params)){
+        return "No params specified";
+    }
+    $condition = 'All';
+    $category = 'All';
+    $page = 1;
+    $min = 'None';
+    $max = 'None';
+    if(!isset($params['keyword']) || empty($params['keyword'])){
+        //if no keyword, then there must be at least 1 param
+        //that differs from the defaults
+        return;
+    }
+    if(isset($params['condition']) && !empty($params['condition'])){
+        $condition = $params['condition'];
+    }
+    if(isset($params['category']) && !empty($params['category'])){
+        $category = $params['category'];
+    }
+    if(isset($params['page']) && !empty($params['page'])){
+        $page = $params['page'];
+    }
+    if(isset($params['min']) && !empty($params['min'])){
+        $min = $params['min'];
+    }
+    if(isset($params['max']) && !empty($params['max'])){
+        $max = $params['max'];
+    }
+    
+    $query = [
+        'Operation' => 'ItemSearch',
+        'SearchIndex' => $category,
+        'Condition' => $condition,
+        'ItemPage' => (string)$page,
+        'MinimumPrice' => $min,
+        'MaximumPrice' => $max,
+        'ResponseGroup' => 'Small,Images'
+    ];
+    if(isset($params['keyword']) && !empty($params['keyword'])){
+        $query['Keywords'] = rawurlencode(str_replace(' ', '_', $params['keyword']));
+    }
+    
+    return createUri($query);
+}
+
+/*  cruncher
+ *  needs: ResponseGroup
+ */
+function createUri($params){
+    //acquire keys
+    $config = json_decode(file_get_contents('../config.json'), true);
+    
+    $method = 'GET';
+    $host = 'webservices.amazon.com';
+    $uri = '/onca/xml';
+    $private_key = $config['amazonSecret'];
+    $params['Service'] = 'AWSECommerceService';
+    $params['AWSAccessKeyId'] = $config['amazonAccessKey'];
+    $params['AssociateTag'] = $config['associateKey'];
+    $params['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');
+    $params['Version'] = '2011-08-01';
+    // sort the parameters
+    ksort($params);
+    // create the canonicalized query
+    $canonicalized_query = array();
+    foreach ($params as $param=>$value){
+        $param = str_replace('%7E', '~', rawurlencode($param));
+        $value = str_replace('%7E', '~', rawurlencode($value));
+        $canonicalized_query[] = $param.'='.$value;
+    }
+    $canonicalized_query = implode('&', $canonicalized_query);
+    // create the string to sign
+    $string_to_sign = $method."\n".$host."\n".$uri."\n".$canonicalized_query;
+    // calculate HMAC with SHA256 and base64-encoding
+    $signature = base64_encode(hash_hmac('sha256', $string_to_sign, $private_key, TRUE));
+    // encode the signature for the request
+    $signature = str_replace('%7E', '~', rawurlencode($signature));
+    // create request
+    $request = 'http://'.$host.$uri.'?'.$canonicalized_query.'&Signature='.$signature;
+    return $request;
+}

@@ -27,13 +27,13 @@ if ($disaster) {
 }
 //Activate the appropriate service
 if ($action == 'login') {
-    if (isset($user) && isset($pswd) && !empty($user) && !empty($pswd)) {
-        require_once 'app/Database.php';
+    if (isset($_POST['userLogin']) && isset($_POST['pswd']) && !empty($_POST['userLogin']) && !empty($_POST['pswd'])) {
+        require_once '../app/Database.php';
         $uid = -1;
-        if (($uid = \app\db\Database::validateUser($user, $pswd)) > -1) {
+        if (($uid = \app\db\Database::validateUser($_POST['userLogin'], $_POST['pswd'])) > -1) {
             session_start();
             $_SESSION['uid'] = $uid;
-            $_SESSION['username'] = $user;
+            $_SESSION['username'] = $_POST['userLogin'];
             //header('Location: /Demo/home');
             require_once 'home.php';
             exit();
@@ -88,6 +88,18 @@ if ($action == 'login') {
     if (isset($_POST['code'])) {
         //determine if member and auto-login
     }
+} else if($action == 'query'){
+    
+    require_once 'utilities.php';
+    $data = conductProductSearch([
+        'keyword' => $_GET['keyword'], 
+        'category' => $_GET['category'], 
+        'condition' => $_GET['condition'], 
+        'page' => $_GET['page']]);
+    if(!empty($data)){
+        require_once 'query.php';
+    }
+    exit();
 }
 echo "Not found";
 
