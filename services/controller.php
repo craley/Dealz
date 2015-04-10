@@ -28,12 +28,18 @@ if ($disaster) {
 //Activate the appropriate service
 if ($action == 'login') {
     if (isset($_POST['userLogin']) && isset($_POST['pswd']) && !empty($_POST['userLogin']) && !empty($_POST['pswd'])) {
-        require_once '../app/Database.php';
-        $uid = -1;
-        if (($uid = \app\db\Database::validateUser($_POST['userLogin'], $_POST['pswd'])) > -1) {
+        
+        require_once 'utilities.php';
+        require_once 'database.php';
+        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
+        $db = new Database($credents);
+        $uid = $db->validateUser($_POST['userLogin'], $_POST['pswd']);
+        if($uid > -1){
+            //load user data
+            $profile = $db->getUser($uid);
+            $products = $db->getProducts($uid);//possible products
             session_start();
             $_SESSION['uid'] = $uid;
-            $_SESSION['username'] = $_POST['userLogin'];
             require_once 'home.php';
             exit();
         }
@@ -41,48 +47,32 @@ if ($action == 'login') {
     header("HTTP/1.1 404 Not Found");
 } elseif ($action == 'register') {
     if (isset($_POST['userLogin']) && isset($_POST['pswd']) && isset($_POST['email']) && !empty($_POST['userLogin']) && !empty($_POST['pswd']) && !empty($_POST['email'])) {
-        require_once '../app/Database.php';
-        $uid = -1;
-        require_once 'app/Database.php';
-        /*
-         * The access key is really the email. Only it must
-         * be unique.
-         */
-        if(\app\db\Database::isUserUnique($user, $email)){
-            //new person, just add them
-            \app\db\Database::insertUser($user, $pswd, $email);
-            $uid = \app\db\Database::validateUser($user, $pswd);
-            
-            session_start();
-            $_SESSION['uid'] = $uid;
-            $_SESSION['username'] = $user;
-            require_once 'home.php';
-            exit();
-        } elseif(!\app\db\Database::isUserNameUnique($username)) {//change to email, same usernames ok
-            //username is not unique
-            require_once 'home.php';
-            exit();
+        
+        require_once 'utilities.php';
+        require_once 'database.php';
+        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
+        $db = new Database($credents);
+        $uid = $db->emailExists($_POST['email']);
+        if($uid > -1){
+            $db->setUserPswd($uid, $_POST['userLogin'], $_POST['pswd']);
         } else {
-            //have unique username, but email exists
-            //have they already set a username and pswd?
-            $uInfo = \app\db\Database::getUserInfoByEmail($email);
-            //temporary fixx, just overwrite any existing username, pswd
-            \app\db\Database::appendUserPswd($email, $user, $pswd);
-            //create All category
-            \app\db\Database::createAllCategory($uInfo['uid']);
-            session_start();
-            $_SESSION['uid'] = $uInfo['uid'];
-            $_SESSION['username'] = $uInfo['username'];
-            require_once 'home.php';
-            exit();
+            $db->insertUser($_POST['userLogin'], $_POST['pswd'], $_POST['email']);
+            $uid = $db->emailExists($_POST['email']);
         }
+        //load user data
+        $profile = $db->getUser($uid);
+        $products = $db->getProducts($uid);//possible products
+        session_start();
+        $_SESSION['uid'] = $uid;
+        require_once 'home.php';
+        exit();
     }
     header("HTTP/1.1 404 Not Found");
 } elseif ($action == 'google') {
     //$code = explode(",", file_get_contents('php://input'));
 
     if (isset($_POST['code'])) {
-        $config = json_decode(file_get_contents('../config.json'));
+        $config = json_decode(file_get_contents('../app/config.json'));
         $client = new Google_Client();
         $client->setClientId($config->googleClientId);
         $client->setClientSecret($config->googleClientSecret);
@@ -111,9 +101,24 @@ if ($action == 'login') {
         $lastName = $userProfile->name->familyName;
         $firstName = $userProfile->name->givenName;
         $email = $emails[0]->value;
-
-        //echo "<p>$firstName</p><p>$lastName</p><p>$email</p>";
+        
+        require_once 'utilities.php';
+        require_once 'database.php';
+        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
+        $db = new Database($credents);
+        $uid = $db->emailExists($email);
+        if($uid > -1){
+            $db->setFirstLast($uid, $firstName, $lastName);
+        } else {
+            $db->insertUserVendor($email, $firstName, $lastName);
+            $uid = $db->emailExists($email);
+        }
+        //load user data
+        $profile = $db->getUser($uid);
+        $products = $db->getProducts($uid);//possible products
+        $_SESSION['uid'] = $uid;
         require_once 'home.php';
+        exit();
     } else {
         echo "<p>Invalid Code</p>";
     }
@@ -134,6 +139,17 @@ if ($action == 'login') {
         require_once 'query.php';
     }
     exit();
+} else if($action == 'add'){
+    //Post product add
+    if(isset($_POST['uid']) && isset($_POST['asin']) && !empty($_POST['uid']) && !empty($_POST['asin'])){
+        require_once 'utilities.php';
+        require_once 'database.php';
+        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
+        $db = new Database($credents);
+        $db->insertProduct($_POST['uid'], $_POST['asin'], $_POST['title'], $_POST['maker']);
+    }
+} else if($action == 'remove'){
+    
 }
 echo "Not found";
 

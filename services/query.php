@@ -11,16 +11,17 @@
         ?>
 
         <?php while ($index < $len): ?>
-                <?php $rowptr = 0; ?>
+            <?php $rowptr = 0; ?>
             <tr>
-    <?php while ($index < $len && $rowptr < $rowCount): ?>
+                <?php while ($index < $len && $rowptr < $rowCount): ?>
                     <td class="col-sm-4" data-asin="<?php echo $data['items'][$index]['asin']; ?>">
                         <img src="<?php echo $data['items'][$index]['image']; ?>" alt="none"><br/>
                         <p><?php echo $data['items'][$index]['title']; ?></p>
                         <p><?php echo $data['items'][$index]['manufacturer']; ?></p>
                         <button type="button" class="btn btn-default">Track</button>
-                    <?php $index++;
-                    $rowptr++; ?>
+                        <?php $index++;
+                        $rowptr++;
+                        ?>
                     </td>
             <?php endwhile; ?>
             </tr>
@@ -65,6 +66,7 @@
         </ul>
     </nav>
     <?php
+
  endif;
 
 

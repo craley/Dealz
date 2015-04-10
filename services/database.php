@@ -185,16 +185,69 @@ class Database {
     public function getUserByCredentials($username, $pswd){
         
     }
-    public function getUserByEmail($email){
-        
+    public function getUser($uid){//ok
+        try {
+            $conn = new \PDO($this->dsn, $this->user, $this->pswd);
+            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); //disable after testing
+
+            $query = "SELECT username, firstName, lastName, email, phone, carrier, autolog "
+                    . "FROM members "
+                    . "WHERE uid=$uid ";
+
+            $result = $conn->query($query);
+            if ($result->rowCount() == 1) {
+                $row = $result->fetch(\PDO::FETCH_ASSOC);
+                $profile = [
+                    'username' => $row['username'], 
+                    'firstName' => $row['firstName'], 
+                    'lastName' => $row['lastName'], 
+                    'email' => $row['email'],
+                    'phone' => $row['phone'], 
+                    'carrier' => $row['carrier'], 
+                    'autolog' => $row['autolog'], 
+                ];
+                return $profile;
+            }
+        } catch (\PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return null;
     }
     
     //Product Interface
-    public function insertProduct($uid){
-        
+    public function insertProduct($uid, $asin, $title, $maker, $priority = 0){
+        try {
+            $conn = new PDO($this->dsn, $this->user, $this->pswd);
+
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $pstmt = $conn->prepare("INSERT INTO products VALUES(:uid, :asin, :title, :maker, :priority)");
+
+            $pstmt->bindValue(":uid", $uid);
+            $pstmt->bindValue(":asin", $asin);
+            $pstmt->bindValue(":title", $title);
+            $pstmt->bindValue(":maker", $maker);
+            $pstmt->bindValue(":priority", $priority);
+            $pstmt->execute();
+            return $pstmt->rowCount();
+        } catch (PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
     }
-    public function removeProduct($uid){
-        
+    public function removeProduct($uid, $asin){
+        try {
+            $conn = new PDO($this->dsn, $this->user, $this->pswd);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $pstmt = $conn->prepare("DELETE FROM products WHERE uid=:uid and asin=:asin");
+
+            $pstmt->bindValue(":uid", $uid);
+            $pstmt->bindValue(":asin", $asin);
+            $pstmt->execute();
+            return $pstmt->rowCount();
+        } catch (PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
     }
     public function getProducts($uid){
         try {
@@ -227,18 +280,20 @@ class Database {
 }
 
 //testing
-$config = json_decode(file_get_contents('../config.json'));
-$credents = [
-    'dsn' => $config->test_db_dsn, 
-    'host' => $config->test_db_host,
-    'user' => $config->test_db_user,
-    'pswd' => $config->test_db_pswd,
-    'database' => $config->test_db_name 
-];
-$db = new Database($credents);
-//$db->insertUser('bob', '3222', 'bob@gmail.com');
-//$res = $db->emailExists('----');
-//$res = $db->validateUser('bob', '3222');
-//$res = $db->setFirstLast(1, 'bob', 'smith');
-$res = $db->setPhone(1, '563802077', 'verizon');
-echo $res;
+//$config = json_decode(file_get_contents('../app/config.json'));
+//$credents = [
+//    'dsn' => $config->test_db_dsn, 
+//    'host' => $config->test_db_host,
+//    'user' => $config->test_db_user,
+//    'pswd' => $config->test_db_pswd,
+//    'database' => $config->test_db_name 
+//];
+//$db = new Database($credents);
+////$db->insertUser('bob', '3222', 'bob@gmail.com');
+////$res = $db->emailExists('----');
+////$res = $db->validateUser('bob', '3222');
+////$res = $db->setFirstLast(1, 'bob', 'smith');
+////$res = $db->setPhone(1, '563802077', 'verizon');
+//$userArray = $db->getUser(1);
+//var_dump($userArray);
+////echo $res;

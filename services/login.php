@@ -19,7 +19,7 @@ php template for login screen.
         <nav role="navigation" class="navbar navbar-default navbar-fixed-top" id="topbar">
             <div class="container">
                 <a class="navbar-brand" href="#">Dealz</a>
-                <ul class="nav navbar-nav" id="chooser">
+                <ul class="nav navbar-nav mini" id="chooser">
                     <li><a href="#">Home</a></li>
                 </ul>
             </div>

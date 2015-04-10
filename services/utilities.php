@@ -41,7 +41,7 @@ function parseXml($file){
     echo "<br/>" . $data->Items->Item->OfferSummary->LowestNewPrice->Amount;
 }
 function parseConfig(){
-    $data = file_get_contents("../config.json");
+    $data = file_get_contents("../app/config.json");
     $json = json_decode($data, true);//true converts objs to assoc arrays
     foreach($json as $key => $value){
         if(!is_array($value)){
@@ -50,13 +50,23 @@ function parseConfig(){
     }
 }
 function getDatabaseCredentials(){
-    $config = json_decode(file_get_contents('../config.json'));
+    $config = json_decode(file_get_contents('../app/config.json'));
     return [ 
         'dsn' => $config->db_dsn, 
         'host' => $config->db_host,
         'user' => $config->db_user,
         'pswd' => $config->db_pswd,
         'database' => $config->db_name 
+    ];
+}
+function getDatabaseCredentialsTest(){
+    $config = json_decode(file_get_contents('../app/config.json'));
+    return [ 
+        'dsn' => $config->test_db_dsn, 
+        'host' => $config->test_db_host,
+        'user' => $config->test_db_user,
+        'pswd' => $config->test_db_pswd,
+        'database' => $config->test_db_name 
     ];
 }
 
@@ -185,7 +195,7 @@ function createItemSearchRequest($params) {
  */
 function createUri($params){
     //acquire keys
-    $config = json_decode(file_get_contents('../config.json'), true);
+    $config = json_decode(file_get_contents('../app/config.json'), true);
     
     $method = 'GET';
     $host = 'webservices.amazon.com';

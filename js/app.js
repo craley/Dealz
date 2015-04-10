@@ -160,6 +160,7 @@ var App = (function (window, $, undefined) {
     function googleSuccess(html) {
         loadApp(html);
     }
+    var uid;
     var loginComponent;
     var loadApp = function(content){
         var holder = $('#main');
@@ -181,7 +182,7 @@ var App = (function (window, $, undefined) {
         var path = 'dealz';
         window.history.pushState({page: path}, 'title', path);
         //$(window).on('popstate', stateChange);
-        
+        uid = document.getElementById('profilefield').dataset.uid;
     };
     //fired when user presses 'Back'
     var stateChange = function(e){
@@ -205,22 +206,72 @@ var App = (function (window, $, undefined) {
         //deactivate logout button
         $('#fireLogout').attr('style', 'display: none');
         $('#signinButton').attr('style', 'display: block');
+        $('#fireLogin').click(loginHandler);
+        $('#fireRegister').click(registerHandler);
     };
     
     var logoutHandler = function(){
         reloadLogin();
+        window.history.back();
     };
     var searchSuccess = function(data){
         var holder = $('#searchload');
         holder.empty();
         holder.html(data);
         //attach track button listeners.
-        
+        $('#searchTable button').on('click', addHandler);
     };
     var searchFailure = function(){
         var holder = $('#searchload');
         holder.empty();
         holder.html('No Results Found');
+    };
+    //product add
+    var addHandler = function(e){
+        var button = $(this);
+        var cell = button.parent();
+        var asin = cell.get(0).dataset.asin;
+        var attribs = [];
+        cell.children('p').each(function(){
+            attribs.push($(this).text());
+        });
+        //0: title 1: maker
+        addEntry(asin, attribs[0], attribs[1], 0);
+        //notify server
+        $.ajax({
+            type: "POST",
+            url: 'services/controller.php',
+            data: {
+                action: 'add',
+                uid: uid,
+                asin: asin,
+                title: attribs[0],
+                maker: attribs[1]
+            }
+        });
+        installProductHandlers();
+    };
+    var installProductHandlers = function(){
+        $('#productTable');
+        
+    };
+    var addEntry = function(asin, title, maker, priority){
+        var table = $('#productTable');
+        var ent = "<tr><td class='col-xs-1'><button class='btn btn-default' type='button'>delete</button></td>";
+        ent += "<td class='col-xs-4'>" + title + "</td>";
+        ent += "<td class='col-xs-4'>" + maker + "</td>";
+        ent += "<td class='col-xs-1'>" + asin + "</td>";
+        ent += "<td class='col-xs-1'>" + priority + "</td>";
+        ent += "<td class='col-xs-1'><button class='btn btn-default' type='button'>offers</button></td></tr>";
+        table.append(ent);
+    };
+    //product remove
+    var removeHandler = function(e){
+        
+    };
+    //see product's offers
+    var offerHandler = function(e){
+        
     };
     //Search button
     var category;
@@ -289,6 +340,7 @@ var App = (function (window, $, undefined) {
         $('#queryCategory li a').on('click', function(e){
             category = $(this).text();
         });
+        
     };
 
     //testing only

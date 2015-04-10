@@ -1,15 +1,9 @@
 <?php
 
 /* 
- * API key: 
+ * 
  */
 
-//require_once 'vendor/google/apiclient/src/Google/Client.php';
-//require_once 'googlesdk/src/Auth/Oauth2.php';
-
-//$client = new Google_Client();
-//$client->setApplicationName("Google UserInfo Starter App");
-//$oauth2 = new Google_Auth_OAuth2($client);
 
 class GoogleAuth {
     

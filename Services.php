@@ -231,7 +231,7 @@ function getDeals($ASIN){
  */
 function createUri($params){
     //acquire keys
-    $config = json_decode(file_get_contents('config.json'), true);
+    $config = json_decode(file_get_contents('app/config.json'), true);
     
     $method = 'GET';
     $host = 'webservices.amazon.com';
