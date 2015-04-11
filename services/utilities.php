@@ -71,7 +71,7 @@ function getDatabaseCredentialsTest(){
 }
 
 //Amazon
-
+//returns associative array of results
 function conductProductSearch($params){
     //construct request uri
     $uri = createItemSearchRequest($params);
@@ -79,6 +79,17 @@ function conductProductSearch($params){
     $xml = send($uri);
     if(empty($xml)) return null;
     return processSearchResults($xml);
+}
+
+function conductProductOffers($asin, $condition = 'All'){
+    if(!isset($asin) || empty($asin)){
+        return;
+    }
+    $uri = createProductOffers($asin, $condition);
+    if(empty($uri)) return null;
+    $xml = send($uri);
+    if(empty($xml)) return null;
+    return processOfferResults($xml);
 }
 
 function send($uri){
@@ -124,6 +135,40 @@ function processSearchResults($res){
         }
         return $data;
     }
+}
+function processOfferResults($res){
+    if(!isset($res) || empty($res)){
+        return "Empty";
+    }
+    $data = [];
+    $xml = simplexml_load_string($res);
+    if($xml->Items->Request->IsValid){
+        $data['asin'] = $xml->Item->ASIN;
+        $data['lowest_new'] = $xml->Item->OfferSummary->LowestNewPrice->FormattedPrice;
+        $data['lowest_used'] = $xml->Item->OfferSummary->LowestUsedPrice->FormattedPrice;
+        $data['total_new'] = $xml->Item->OfferSummary->TotalNew;
+        $data['total_used'] = $xml->Item->OfferSummary->TotalUsed;
+        $data['offers'] = [];
+        foreach($xml->Item->Offers->Offer as $offer){
+            $row['vendor'] = $offer->Merchant;
+            $row['condition'] = $offer->OfferAttributes->Condition;
+            $row['price'] = $offer->OfferListing->Price->FormattedPrice;
+            
+            array_push($data['offers'], $row);
+        }
+        return $data;
+    }
+}
+//offers are based on an ASIN and a condition
+function createProductOffers($asin, $condition = 'All'){
+    $params = [
+        'itemId' => $ASIN,
+        'IdType' => 'ASIN',
+        'Condition' => $condition,
+        'Operation' => 'ItemLookup',
+        'ResponseGroup' => 'OfferFull'
+    ];
+    return createUri($params);
 }
 
 /*

@@ -188,6 +188,14 @@ if ($action == 'login') {
     }
 } else if ($action == 'remove') {
     
+} else if($action == 'offer'){
+    if(isset($_GET['asin']) and !empty($_GET['asin'])){
+        require_once 'utilities.php';
+        $data = conductProductOffers($asin);//condition optional
+        if(isset($data) and !empty($data)){
+            require_once 'offer.php';
+        }
+    }
 }
 echo "Not found";
 

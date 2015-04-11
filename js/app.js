@@ -142,6 +142,8 @@ var App = (function (window, $, undefined) {
             var ident = e.target.id;
             if(offersVisible){
                 //blow it away
+                $('#main').remove('#offerfield');
+                offersVisible = false;
             }
             if (ident == '1') {//search
                 $('#productfield').addClass('hide');
@@ -274,7 +276,7 @@ var App = (function (window, $, undefined) {
     };
     //product remove
     var removeHandler = function(e){
-        
+        alert('Rmove');
     };
     //see product's offers
     var offerHandler = function(e){
@@ -282,18 +284,44 @@ var App = (function (window, $, undefined) {
         var asin = $(crew.get(2)).text();
         //var title = $(crew.get(0)).text();
         //var maker = $(crew.get(1)).text();
-        
+        if(!asin){
+            $.ajax({
+            type: "GET",
+            url: 'services/controller.php',
+            data: {
+                action: 'offer',
+                asin: asin
+            },
+            success: offerSuccess,
+            error: offerFailure,
+            dataType: 'html'
+        });
+        }
     };
     var offersVisible = false;
     var offerSuccess = function(html){
-        //make product screen invisible
+        if(html){
+            //make product screen invisible
+            $('#productfield').addClass('hide');
+            var holder = $('#main');
+            holder.html(html);
+            //attach back handler
+            //var bottom = $('#bottomload');
+            //bottom.html('<li><a href id="fireLogout">Logout</a></li>');
+            offersVisible = true;
+            
+            $('#bottomload').append($('<li><a href id="offerBack">Back</a></li>'));
+            $('#offerBack').on('click', offersBackHandler);
+        }
         
     };
     var offerFailure = function(){
         
     };
     var offersBackHandler = function(e){
-        
+        $('#main').remove('#offerfield');
+        $('#productfield').removeClass('hide');
+        offersVisible = false;
     };
     //Search button
     var category;
