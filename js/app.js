@@ -5,7 +5,6 @@
  * 
  * Navigation:
  *  Login -> Home
- *  ** Back button should leave?
  */
 //Globals
 
@@ -23,6 +22,7 @@ function signInCallback(authResult) {
             type: 'POST',
             url: 'services/controller.php',
             success: App.googleSuccess,
+            error: App.googleFailure,
             data: {
                 action: 'google',
                 code: authResult['code']
@@ -140,6 +140,9 @@ var App = (function (window, $, undefined) {
     var siteRouter = function (e) {
         if (e.target) {
             var ident = e.target.id;
+            if(offersVisible){
+                //blow it away
+            }
             if (ident == '1') {//search
                 $('#productfield').addClass('hide');
                 $('#profilefield').addClass('hide');
@@ -160,6 +163,9 @@ var App = (function (window, $, undefined) {
     function googleSuccess(html) {
         loadApp(html);
     }
+    function googleFailure(){
+        alert("Failed");
+    }
     var uid;
     var loginComponent;
     var loadApp = function(content){
@@ -178,10 +184,10 @@ var App = (function (window, $, undefined) {
         bottomList.html('<li><a href id="fireLogout">Logout</a></li>');
         $('#fireLogout').on('click', logoutHandler);
         setupHome();
-        //display a different url
-        var path = 'dealz';
-        window.history.pushState({page: path}, 'title', path);
-        //$(window).on('popstate', stateChange);
+        
+        //var path = 'dealz';
+        //window.history.pushState({page: path}, 'title', path);//comment
+        
         uid = document.getElementById('profilefield').dataset.uid;
     };
     //fired when user presses 'Back'
@@ -212,7 +218,7 @@ var App = (function (window, $, undefined) {
     
     var logoutHandler = function(){
         reloadLogin();
-        window.history.back();
+        //window.history.back();//history
     };
     var searchSuccess = function(data){
         var holder = $('#searchload');
@@ -252,17 +258,18 @@ var App = (function (window, $, undefined) {
         installProductHandlers();
     };
     var installProductHandlers = function(){
-        $('#productTable');
+        $('#productTable button').on('click', offerHandler);
+        $('#productTable a').on('click', removeHandler);
         
     };
     var addEntry = function(asin, title, maker, priority){
         var table = $('#productTable');
-        var ent = "<tr><td class='col-xs-1'><button class='btn btn-default' type='button'>delete</button></td>";
+        var ent = "<tr><td class='col-xs-1'><button class='btn btn-default' type='button'>offers</button></td>";
         ent += "<td class='col-xs-4'>" + title + "</td>";
         ent += "<td class='col-xs-4'>" + maker + "</td>";
         ent += "<td class='col-xs-1'>" + asin + "</td>";
         ent += "<td class='col-xs-1'>" + priority + "</td>";
-        ent += "<td class='col-xs-1'><button class='btn btn-default' type='button'>offers</button></td></tr>";
+        ent += "<td class='col-xs-1'><a href='#'><span class='glyphicon glyphicon-trash'></span></a></td></tr>";
         table.append(ent);
     };
     //product remove
@@ -271,6 +278,21 @@ var App = (function (window, $, undefined) {
     };
     //see product's offers
     var offerHandler = function(e){
+        var crew = $(this).parent().parent().find('p');
+        var asin = $(crew.get(2)).text();
+        //var title = $(crew.get(0)).text();
+        //var maker = $(crew.get(1)).text();
+        
+    };
+    var offersVisible = false;
+    var offerSuccess = function(html){
+        //make product screen invisible
+        
+    };
+    var offerFailure = function(){
+        
+    };
+    var offersBackHandler = function(e){
         
     };
     //Search button
@@ -308,8 +330,8 @@ var App = (function (window, $, undefined) {
     var setupLogin = function () {
         $('#fireLogin').click(loginHandler);
         $('#fireRegister').click(registerHandler);
-        window.history.replaceState({page:'login'}, 'title', 'login');
-        window.addEventListener('popstate', stateChange, false);
+        //window.history.replaceState({page:'login'}, 'title', 'login');//history
+        //window.addEventListener('popstate', stateChange, false);
     };
     
     //Setup Home Screen
@@ -340,7 +362,7 @@ var App = (function (window, $, undefined) {
         $('#queryCategory li a').on('click', function(e){
             category = $(this).text();
         });
-        
+        installProductHandlers();
     };
 
     //testing only
@@ -350,7 +372,8 @@ var App = (function (window, $, undefined) {
     return {
         setupLogin: setupLogin,
         setupHome: setupHome,
-        googleSuccess: googleSuccess
+        googleSuccess: googleSuccess,
+        googleFailure: googleFailure
     };
 
 })(window, jQuery);

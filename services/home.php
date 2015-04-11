@@ -65,16 +65,17 @@
             </thead>
             <tbody>
             <?php  if(isset($products) && !empty($products)): ?>
+                <?php  $count = 0;  ?>
                 <?php foreach ($products as $value): ?>
-            <tr>
+            <tr <?php echo "id='row$count'";  ?>>
                 <!-- <td class="col-xs-1"><button class="btn btn-default" type="button">delete</button></td> -->
                 <!-- <a href="#con2"><span class="glyphicon glyphicon-home"></span> Google+</a> -->
-                <td class="col-xs-1"><a href><span class="glyphicon glyphicon-trash"></span></a></td>
-                <td class="col-xs-4"><?php echo $value['title']; ?></td>
-                <td class="col-xs-4"><?php echo $value['maker']; ?></td>
-                <td class="col-xs-1"><?php echo $value['asin']; ?></td>
-                <td class="col-xs-1"><?php echo $value['priority']; ?></td>
                 <td class="col-xs-1"><button class="btn btn-default" type="button">offers</button></td>
+                <td class="col-xs-4"><p><?php echo $value['title']; ?></p></td>
+                <td class="col-xs-4"><p><?php echo $value['maker']; ?></p></td>
+                <td class="col-xs-1"><p><?php echo $value['asin']; ?></p></td>
+                <td class="col-xs-1"><p><?php echo $value['priority']; ?></p></td>
+                <td class="col-xs-1"><a href="#"><span class="glyphicon glyphicon-trash"></span></a></td>
             </tr>
                 <?php endforeach; ?>
             <?php endif; ?>

@@ -57,8 +57,8 @@ class Database {
             $conn = new PDO($this->dsn, $this->user, $this->pswd);
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);//testing.
 
-            $pstmt = $conn->prepare("INSERT INTO members VALUES(NULL, :user, :first, :last, :email, NULL, NULL, NULL, NULL, :autolog)"); //auto-increment requires NULL
-            $pstmt->bindValue(":user", $first . $last);
+            $pstmt = $conn->prepare("INSERT INTO members VALUES(NULL, NULL, :first, :last, :email, NULL, NULL, NULL, NULL, :autolog)"); //auto-increment requires NULL
+            
             
             if(isset($first) && !empty($first)){
                 $pstmt->bindValue(":first", $first);
@@ -72,6 +72,7 @@ class Database {
             }
             
             $pstmt->bindValue(":email", $email);
+            
             $pstmt->bindValue(":autolog", 0);
             $pstmt->execute();
             return $pstmt->rowCount();

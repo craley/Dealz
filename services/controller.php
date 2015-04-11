@@ -28,16 +28,16 @@ if ($disaster) {
 //Activate the appropriate service
 if ($action == 'login') {
     if (isset($_POST['userLogin']) && isset($_POST['pswd']) && !empty($_POST['userLogin']) && !empty($_POST['pswd'])) {
-        
+
         require_once 'utilities.php';
         require_once 'database.php';
-        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
+        $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
         $db = new Database($credents);
         $uid = $db->validateUser($_POST['userLogin'], $_POST['pswd']);
-        if($uid > -1){
+        if ($uid > -1) {
             //load user data
             $profile = $db->getUser($uid);
-            $products = $db->getProducts($uid);//possible products
+            $products = $db->getProducts($uid); //possible products
             session_start();
             $_SESSION['uid'] = $uid;
             require_once 'home.php';
@@ -47,13 +47,13 @@ if ($action == 'login') {
     header("HTTP/1.1 404 Not Found");
 } elseif ($action == 'register') {
     if (isset($_POST['userLogin']) && isset($_POST['pswd']) && isset($_POST['email']) && !empty($_POST['userLogin']) && !empty($_POST['pswd']) && !empty($_POST['email'])) {
-        
+
         require_once 'utilities.php';
         require_once 'database.php';
-        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
+        $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
         $db = new Database($credents);
         $uid = $db->emailExists($_POST['email']);
-        if($uid > -1){
+        if ($uid > -1) {
             $db->setUserPswd($uid, $_POST['userLogin'], $_POST['pswd']);
         } else {
             $db->insertUser($_POST['userLogin'], $_POST['pswd'], $_POST['email']);
@@ -61,7 +61,7 @@ if ($action == 'login') {
         }
         //load user data
         $profile = $db->getUser($uid);
-        $products = $db->getProducts($uid);//possible products
+        $products = $db->getProducts($uid); //possible products
         session_start();
         $_SESSION['uid'] = $uid;
         require_once 'home.php';
@@ -80,44 +80,82 @@ if ($action == 'login') {
         $client->setRedirectUri('postmessage');
         $client->setScopes(array(
             'https://www.googleapis.com/auth/plus.login',
-            'https://www.googleapis.com/auth/plus.me',
-            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/plus.me', 
+            'https://www.googleapis.com/auth/userinfo.email', 
             'https://www.googleapis.com/auth/userinfo.profile'
         ));
-        $plus = new Google_Service_Plus($client);
 
         $client->authenticate($_POST['code']);
-        $token = json_decode($client->getAccessToken());
-
-        //$attribs = $client->verifyIdToken($token->id_token, "clientID")->getAttributes();
-        //$gplus_id = $attribs['payload']['sub'];
+        $token = $client->getAccessToken();
         //save token
         session_start();
-        $_SESSION['token'] = json_encode($token);
+        $_SESSION['token'] = json_decode($token);
 
-        $userProfile = $plus->people->get('me');
-        $emails = $userProfile->getEmails();
-
-        $lastName = $userProfile->name->familyName;
-        $firstName = $userProfile->name->givenName;
-        $email = $emails[0]->value;
         
-        require_once 'utilities.php';
-        require_once 'database.php';
-        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
-        $db = new Database($credents);
-        $uid = $db->emailExists($email);
-        if($uid > -1){
-            $db->setFirstLast($uid, $firstName, $lastName);
-        } else {
-            $db->insertUserVendor($email, $firstName, $lastName);
+
+        if ($token) {
+            $client->setAccessToken($token);
+            $oath = new Google_Service_Oauth2($client);
+            $plus = new Google_Service_Plus($client);
+            $userData = $oath->userinfo->get();
+            $userProfile = $plus->people->get('me');
+            
+            
+            $emailList = $userProfile->getEmails();
+            $emailList = $userProfile->getEmails();
+            $lastName = $userProfile->name->familyName;
+            $firstName = $userProfile->name->givenName;
+            
+            if($emailList){
+                $email = $emailList[0]->value;
+            }
+            
+            if(!isset($email)){
+                $email = $userData->email;
+            }
+            if(!isset($firstName)){
+                $firstName = $userData->given_name;
+            }
+            if(!isset($lastName)){
+                $lastName = $userData->family_name;
+            }
+            //Hack: handle google failure
+            if(!$email){
+                $email = 'not verified';
+            }
+            //echo $email;
+            
+            //var_dump($userData);
+            //var_dump($userProfile);
+
+            require_once 'utilities.php';
+            require_once 'database.php';
+            $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
+            $db = new Database($credents);
             $uid = $db->emailExists($email);
+            if ($uid > -1) {
+                $db->setFirstLast($uid, $firstName, $lastName);
+            } else {
+                $db->insertUserVendor($email, $firstName, $lastName);
+                $uid = $db->emailExists($email);
+            }
+            //load user data
+            $profile = $db->getUser($uid);
+            $products = $db->getProducts($uid); //possible products
+            $_SESSION['uid'] = $uid;
+            require_once 'home.php';
+            exit();
         }
-        //load user data
-        $profile = $db->getUser($uid);
-        $products = $db->getProducts($uid);//possible products
-        $_SESSION['uid'] = $uid;
-        require_once 'home.php';
+        
+        //$plus = new Google_Service_Plus($client);
+        //$userProfile = $plus->people->get('me');
+        //$emails = $userProfile->getEmails();
+        //$lastName = $userProfile->name->familyName;
+        //$firstName = $userProfile->name->givenName;
+        //$email = $emails[0]->value;
+        //var_dump($userProfile);
+
+
         exit();
     } else {
         echo "<p>Invalid Code</p>";
@@ -127,28 +165,28 @@ if ($action == 'login') {
     if (isset($_POST['code'])) {
         //determine if member and auto-login
     }
-} else if($action == 'query'){
-    
+} else if ($action == 'query') {
+
     require_once 'utilities.php';
     $data = conductProductSearch([
-        'keyword' => $_GET['keyword'], 
-        'category' => $_GET['category'], 
-        'condition' => $_GET['condition'], 
+        'keyword' => $_GET['keyword'],
+        'category' => $_GET['category'],
+        'condition' => $_GET['condition'],
         'page' => $_GET['page']]);
-    if(!empty($data)){
+    if (!empty($data)) {
         require_once 'query.php';
     }
     exit();
-} else if($action == 'add'){
+} else if ($action == 'add') {
     //Post product add
-    if(isset($_POST['uid']) && isset($_POST['asin']) && !empty($_POST['uid']) && !empty($_POST['asin'])){
+    if (isset($_POST['uid']) && isset($_POST['asin']) && !empty($_POST['uid']) && !empty($_POST['asin'])) {
         require_once 'utilities.php';
         require_once 'database.php';
-        $credents = getDatabaseCredentialsTest();//TESSSSSSSSSSSSST
+        $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
         $db = new Database($credents);
         $db->insertProduct($_POST['uid'], $_POST['asin'], $_POST['title'], $_POST['maker']);
     }
-} else if($action == 'remove'){
+} else if ($action == 'remove') {
     
 }
 echo "Not found";
