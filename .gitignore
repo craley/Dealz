@@ -6,4 +6,4 @@ searchData.xml
 composer.lock
 test/*
 sql/dbtest.php
-
+offers.xml

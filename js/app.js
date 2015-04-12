@@ -86,13 +86,14 @@ var App = (function (window, $, undefined) {
             error: loginFailure,
             dataType: 'html'
         });
+        return false;
     };
     //Login Callbacks
     var loginSuccess = function (data) {
         loadApp(data);
     };
     var loginFailure = function () {
-        $('#errmsgLogin').text('Invalid Credentials');
+        $('#errmsgLogin').text('  Invalid Credentials');
     };
     
     //Register Handler
@@ -126,23 +127,38 @@ var App = (function (window, $, undefined) {
             error: registerFailure,
             dataType: 'html'
         });
+        return false;
     };
-    //Register Callbacks
+    /*
+     * Handle successful registration.
+     */
     var registerSuccess = function(data){
         loadApp(data);
     };
+    /*
+     * Handle registration error.
+     */
     var registerFailure = function(){
-        $('#errmsgRegister').text('Invalid Credentials');
+        $('#errmsgRegister').text('  Invalid Credentials');
     };
-    
+    /*
+     * Updates user's profile.
+     */
+    var updateHandler = function(){
+        return false;
+    };
     
     //Home Screen Navigation: does not affect Back button
     var siteRouter = function (e) {
         if (e.target) {
             var ident = e.target.id;
+            //handle a jump from offer screen if out
             if(offersVisible){
                 //blow it away
-                $('#main').remove('#offerfield');
+                $('div').remove('#offerfield');
+                //$('#offerfield').remove();//dont work
+                $('#productfield').removeClass('hide');
+                $('#offerBack').remove();
                 offersVisible = false;
             }
             if (ident == '1') {//search
@@ -201,6 +217,7 @@ var App = (function (window, $, undefined) {
         if(state.page == 'login'){
             reloadLogin();
         }
+        return false;
     };
     var reloadLogin = function(){
         var topList = $('#chooser');
@@ -221,6 +238,7 @@ var App = (function (window, $, undefined) {
     var logoutHandler = function(){
         reloadLogin();
         //window.history.back();//history
+        return false;
     };
     var searchSuccess = function(data){
         var holder = $('#searchload');
@@ -258,6 +276,7 @@ var App = (function (window, $, undefined) {
             }
         });
         installProductHandlers();
+        return false;
     };
     var installProductHandlers = function(){
         $('#productTable button').on('click', offerHandler);
@@ -276,7 +295,8 @@ var App = (function (window, $, undefined) {
     };
     //product remove
     var removeHandler = function(e){
-        alert('Rmove');
+        //blow away row
+        //notify db via ajax
     };
     //see product's offers
     var offerHandler = function(e){
@@ -284,7 +304,7 @@ var App = (function (window, $, undefined) {
         var asin = $(crew.get(2)).text();
         //var title = $(crew.get(0)).text();
         //var maker = $(crew.get(1)).text();
-        if(!asin){
+        if(asin){
             $.ajax({
             type: "GET",
             url: 'services/controller.php',
@@ -297,6 +317,7 @@ var App = (function (window, $, undefined) {
             dataType: 'html'
         });
         }
+        return false;
     };
     var offersVisible = false;
     var offerSuccess = function(html){
@@ -304,7 +325,7 @@ var App = (function (window, $, undefined) {
             //make product screen invisible
             $('#productfield').addClass('hide');
             var holder = $('#main');
-            holder.html(html);
+            holder.append($(html));
             //attach back handler
             //var bottom = $('#bottomload');
             //bottom.html('<li><a href id="fireLogout">Logout</a></li>');
@@ -319,9 +340,12 @@ var App = (function (window, $, undefined) {
         
     };
     var offersBackHandler = function(e){
-        $('#main').remove('#offerfield');
+        $('div').remove('#offerfield');
+        //$('#offerfield').remove();//dont work
         $('#productfield').removeClass('hide');
+        $('#offerBack').remove();
         offersVisible = false;
+        return false;
     };
     //Search button
     var category;
@@ -386,9 +410,11 @@ var App = (function (window, $, undefined) {
         $('#queryFire').click(queryHandler);
         $('#queryCond li a').on('click', function(e){
             condition = $(this).text();
+            return false;
         });
         $('#queryCategory li a').on('click', function(e){
             category = $(this).text();
+            return false;
         });
         installProductHandlers();
     };

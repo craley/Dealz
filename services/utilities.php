@@ -86,6 +86,7 @@ function conductProductOffers($asin, $condition = 'All'){
         return;
     }
     $uri = createProductOffers($asin, $condition);
+    
     if(empty($uri)) return null;
     $xml = send($uri);
     if(empty($xml)) return null;
@@ -136,21 +137,24 @@ function processSearchResults($res){
         return $data;
     }
 }
+
+
 function processOfferResults($res){
     if(!isset($res) || empty($res)){
         return "Empty";
     }
     $data = [];
     $xml = simplexml_load_string($res);
+    
     if($xml->Items->Request->IsValid){
-        $data['asin'] = $xml->Item->ASIN;
-        $data['lowest_new'] = $xml->Item->OfferSummary->LowestNewPrice->FormattedPrice;
-        $data['lowest_used'] = $xml->Item->OfferSummary->LowestUsedPrice->FormattedPrice;
-        $data['total_new'] = $xml->Item->OfferSummary->TotalNew;
-        $data['total_used'] = $xml->Item->OfferSummary->TotalUsed;
+        $data['asin'] = $xml->Items->Item->ASIN;
+        $data['lowest_new'] = $xml->Items->Item->OfferSummary->LowestNewPrice->FormattedPrice;
+        $data['lowest_used'] = $xml->Items->Item->OfferSummary->LowestUsedPrice->FormattedPrice;
+        $data['total_new'] = $xml->Items->Item->OfferSummary->TotalNew;
+        $data['total_used'] = $xml->Items->Item->OfferSummary->TotalUsed;
         $data['offers'] = [];
-        foreach($xml->Item->Offers->Offer as $offer){
-            $row['vendor'] = $offer->Merchant;
+        foreach($xml->Items->Item->Offers->Offer as $offer){
+            $row['vendor'] = $offer->Merchant->Name;
             $row['condition'] = $offer->OfferAttributes->Condition;
             $row['price'] = $offer->OfferListing->Price->FormattedPrice;
             
@@ -162,7 +166,7 @@ function processOfferResults($res){
 //offers are based on an ASIN and a condition
 function createProductOffers($asin, $condition = 'All'){
     $params = [
-        'itemId' => $ASIN,
+        'ItemId' => $asin,
         'IdType' => 'ASIN',
         'Condition' => $condition,
         'Operation' => 'ItemLookup',

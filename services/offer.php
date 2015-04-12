@@ -1,5 +1,5 @@
 <div id="offerfield" class="panel panel-primary">
-    <div class="panel-heading">Offers for <?php echo "$asin"; ?></div>
+    <div class="panel-heading">Offers for <?php echo "" . $data['asin']; ?></div>
     <div class="panel-body" id="offerload">
         <table class="table table-bordered" id="offerTable">
             <thead>

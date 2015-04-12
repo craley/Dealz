@@ -52,7 +52,10 @@ class Database {
      * @param type $last
      * @return type
      */
-    public function insertUserVendor($email, $first, $last){
+    public function insertUserVendor($first, $last, $email = 'na'){
+        if(!isset($email) and !isset($first) and !isset($last)){
+            return;
+        }
         try {
             $conn = new PDO($this->dsn, $this->user, $this->pswd);
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);//testing.
@@ -70,8 +73,12 @@ class Database {
             } else {
                 $pstmt->bindValue(":last", NULL);
             }
+            if($email != 'na'){
+                $pstmt->bindValue(":email", $email);
+            } else {
+                $pstmt->bindValue(":email", NULL);
+            }
             
-            $pstmt->bindValue(":email", $email);
             
             $pstmt->bindValue(":autolog", 0);
             $pstmt->execute();
@@ -90,6 +97,47 @@ class Database {
             $sql = "SELECT uid FROM members WHERE email=?";
             $stmt = $conn->prepare($sql);
             $stmt->bindValue(1, $email);
+            $stmt->execute();
+            if ($stmt->rowCount() == 1) {
+                return $stmt->fetch()[0];
+            }
+        } catch (PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return -1;
+    }
+    public function nameExists($first, $last){//
+        try {
+            $conn = new PDO($this->dsn, $this->user, $this->pswd);
+            $sql = "SELECT uid FROM members WHERE firstName=:first AND lastName=:last";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindValue(':first', $first);
+            $stmt->bindValue(':last', $last);
+            $stmt->execute();
+            if ($stmt->rowCount() == 1) {
+                return $stmt->fetch()[0];
+            }
+        } catch (PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return -1;
+    }
+    //Workaround for google failing to produce email for some people.
+    public function googleUserExists($email = 'na', $first = 'na', $last = 'na'){
+        //google sends back email of "Fail"
+        if($email != 'na' and strlen($email) > 8){
+            return $this->emailExists($email);
+        }
+        //Email Fallback: must have both names!
+        if($first == 'na' or $last == 'na'){
+            return -1;
+        }
+        try {
+            $conn = new PDO($this->dsn, $this->user, $this->pswd);
+            $sql = "SELECT uid FROM members WHERE firstName=:first AND lastName=:last";//equals in SQL in case insensitive
+            $stmt = $conn->prepare($sql);
+            $stmt->bindValue(':first', $first);
+            $stmt->bindValue(':last', $last);
             $stmt->execute();
             if ($stmt->rowCount() == 1) {
                 return $stmt->fetch()[0];

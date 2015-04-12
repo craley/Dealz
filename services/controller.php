@@ -45,6 +45,7 @@ if ($action == 'login') {
         }
     }
     header("HTTP/1.1 404 Not Found");
+    exit();
 } elseif ($action == 'register') {
     if (isset($_POST['userLogin']) && isset($_POST['pswd']) && isset($_POST['email']) && !empty($_POST['userLogin']) && !empty($_POST['pswd']) && !empty($_POST['email'])) {
 
@@ -68,6 +69,7 @@ if ($action == 'login') {
         exit();
     }
     header("HTTP/1.1 404 Not Found");
+    exit();
 } elseif ($action == 'google') {
     //$code = explode(",", file_get_contents('php://input'));
 
@@ -91,8 +93,6 @@ if ($action == 'login') {
         session_start();
         $_SESSION['token'] = json_decode($token);
 
-        
-
         if ($token) {
             $client->setAccessToken($token);
             $oath = new Google_Service_Oauth2($client);
@@ -102,14 +102,13 @@ if ($action == 'login') {
             
             
             $emailList = $userProfile->getEmails();
-            $emailList = $userProfile->getEmails();
             $lastName = $userProfile->name->familyName;
             $firstName = $userProfile->name->givenName;
             
             if($emailList){
                 $email = $emailList[0]->value;
             }
-            
+            //make 2nd attempts for email and names
             if(!isset($email)){
                 $email = $userData->email;
             }
@@ -119,26 +118,36 @@ if ($action == 'login') {
             if(!isset($lastName)){
                 $lastName = $userData->family_name;
             }
-            //Hack: handle google failure
-            if(!$email){
-                $email = 'not verified';
+            //Handle: nothing found
+            if(!isset($email) and !isset($firstName) and !isset($lastName)){
+                header("HTTP/1.1 404 Not Found");
+                exit();
             }
-            //echo $email;
             
-            //var_dump($userData);
-            //var_dump($userProfile);
-
             require_once 'utilities.php';
             require_once 'database.php';
             $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
             $db = new Database($credents);
-            $uid = $db->emailExists($email);
-            if ($uid > -1) {
-                $db->setFirstLast($uid, $firstName, $lastName);
-            } else {
-                $db->insertUserVendor($email, $firstName, $lastName);
-                $uid = $db->emailExists($email);
+            $uid = $db->googleUserExists($email, $firstName, $lastName);
+            if($uid == -1){
+                //create
+                $db->insertUserVendor($firstName, $lastName, $email);//pssibly null email
+                if(!isset($email)){
+                   $uid = $db->nameExists($firstName, $lastName); 
+                } else {
+                    $uid = $db->emailExists($email);
+                }
+                
             }
+            
+            
+//            $uid = $db->emailExists($email);
+//            if ($uid > -1) {
+//                $db->setFirstLast($uid, $firstName, $lastName);
+//            } else {
+//                $db->insertUserVendor($email, $firstName, $lastName);
+//                $uid = $db->emailExists($email);
+//            }
             //load user data
             $profile = $db->getUser($uid);
             $products = $db->getProducts($uid); //possible products
@@ -165,6 +174,7 @@ if ($action == 'login') {
     if (isset($_POST['code'])) {
         //determine if member and auto-login
     }
+    exit();
 } else if ($action == 'query') {
 
     require_once 'utilities.php';
@@ -186,16 +196,21 @@ if ($action == 'login') {
         $db = new Database($credents);
         $db->insertProduct($_POST['uid'], $_POST['asin'], $_POST['title'], $_POST['maker']);
     }
+    exit();
 } else if ($action == 'remove') {
     
 } else if($action == 'offer'){
     if(isset($_GET['asin']) and !empty($_GET['asin'])){
         require_once 'utilities.php';
-        $data = conductProductOffers($asin);//condition optional
+        $data = conductProductOffers($_GET['asin']);//condition optional
         if(isset($data) and !empty($data)){
+            
             require_once 'offer.php';
         }
     }
+    exit();
+} else if($action == 'update'){
+    exit();
 }
 echo "Not found";
 
