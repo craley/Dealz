@@ -60,6 +60,80 @@ function signInCallback(authResult) {
 
 //create global footprint for external callbacks.
 var App = (function (window, $, undefined) {
+    var LOGIN = 1;
+    var SEARCH = 2;
+    var PRODUCTS = 3;
+    var PROFILE = 4;
+    var OFFERS = 5;
+    
+    var topbar = $('#chooser');
+    var bottombar = $('#bottomload');
+    //lower buttons(containers, not actual button)
+    var googleButton = $('#signinButton');
+    var logoutButton = $('#bottomLogout');
+    var offerBack = $('#bottomBack');
+    var twitterButton = $('#bottomTwitter');
+    var facebookButton = $('#bottomFacebook');
+    //top buttons
+    var searchButton = $('#topSearch');
+    var productButton = $('#topProducts');
+    var profileButton = $('#topProfile');
+    
+    var mainContent = $('#main');
+    var loginFrame = $('#myCarousel');
+    var searchFrame;// = $('#searchfield')
+    var productFrame;// = $('#productfield');
+    var profileFrame;// = $('#profilefield');
+    var offerFrame;
+    
+    //state machine
+    function changeState(state){
+        if(state === LOGIN){
+            searchButton.hide();
+            productButton.hide();
+            profileButton.hide();
+            logoutButton.hide();
+            offerBack.hide();
+            googleButton.show();
+            twitterButton.show();
+            facebookButton.show();
+            
+        } else if(state === SEARCH){
+            if(offersVisible){
+                
+            }
+            loginFrame.hide();
+            searchFrame.show();
+            productFrame.hide();
+            profileFrame.hide();
+            
+            
+        } else if(state === PRODUCTS){
+            
+        } else if(state === PROFILE){
+            
+        } else if(state === OFFERS){
+            
+        }
+    }
+    function homePreamble(){
+        searchFrame = $('#searchfield');
+        productFrame = $('#productfield');
+        profileFrame = $('#profilefield');
+        uid = document.getElementById('profilefield').dataset.uid;
+        $('#chooser li a').click(siteRouter);  
+        $('#queryFire').click(queryHandler);
+        $('#queryCond li a').on('click', function(e){
+            condition = $(this).text();
+            return false;
+        });
+        $('#queryCategory li a').on('click', function(e){
+            category = $(this).text();
+            return false;
+        });
+        changeState(SEARCH);
+    }
+    
     
     //Login Handler
     var loginHandler = function (e) {
@@ -179,7 +253,10 @@ var App = (function (window, $, undefined) {
     };
     
     function googleSuccess(html) {
-        loadApp(html);
+        //loadApp(html);
+        
+        homePreamble();
+        
     }
     function googleFailure(){
         alert("Failed");
@@ -195,8 +272,7 @@ var App = (function (window, $, undefined) {
         //load bars
         var topList = $('#chooser');
         topList.empty();
-        //topList.html("<li><a href='#search'>Search</a></li><li><a href='#products'>Products</a></li><li><a href='#profile'>Profile</a></li>");
-        topList.html("<li><a id='1' href>Search</a></li><li><a id='2' href>Products</a></li><li><a id='3' href>Profile</a></li>");
+        topList.html("<li><a id='1' href='#'>Search</a></li><li><a id='2' href='#'>Products</a></li><li><a id='3' href='#'>Profile</a></li>");
         var bottomList = $('#bottomload');
         $('#signinButton').attr('style', 'display: none');
         bottomList.html('<li><a href id="fireLogout">Logout</a></li>');
@@ -229,8 +305,10 @@ var App = (function (window, $, undefined) {
         //push login
         loginComponent.appendTo(holder);
         //deactivate logout button
-        $('#fireLogout').attr('style', 'display: none');
-        $('#signinButton').attr('style', 'display: block');
+        //$('#fireLogout').attr('style', 'display: none');
+        //$('#signinButton').attr('style', 'display: block');
+        $('#fireLogout').hide();
+        $('#signinButton').show();
         $('#fireLogin').click(loginHandler);
         $('#fireRegister').click(registerHandler);
     };
@@ -389,7 +467,7 @@ var App = (function (window, $, undefined) {
     //Setup Home Screen
     var setupHome = function () {
         //set site nav
-        $('#chooser li a').click(siteRouter);
+        
 
         //Primary routing via hashchange: back button works.
 //        window.addEventListener('hashchange', function (e) {
@@ -407,6 +485,7 @@ var App = (function (window, $, undefined) {
 //                $('#profilefield').removeClass('hide');
 //            }
 //        }, false);
+        $('#chooser li a').click(siteRouter);  
         $('#queryFire').click(queryHandler);
         $('#queryCond li a').on('click', function(e){
             condition = $(this).text();

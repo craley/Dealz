@@ -24,7 +24,10 @@
             <div class="container">
                 <a class="navbar-brand" href="#">Dealz</a>
                 <ul class="nav navbar-nav mini" id="chooser">
-                    <li><a href="">Home</a></li>
+                    <li id="topHome"><a href="">Home</a></li>
+                    <li id="topSearch" class="hide"><a id="1" href='#'>Search</a></li>
+                    <li id="topProducts" class="hide"><a id="2" href='#'>Products</a></li>
+                    <li id="topProfile" class="hide"><a id="3" href='#'>Profile</a></li>
                 </ul>
             </div>
         </nav>
@@ -111,8 +114,8 @@
         <nav role="navigation" class="navbar navbar-default navbar-fixed-bottom" id="bottombar">
             <div class="container">
                 <ul class="nav nav-pills" id="bottomload">
-                    <li><a href="#">Facebook</a></li>
-                    <li><a href="#">Twitter</a></li>
+                    <li id="bottomFacebook" ><a href="#">Facebook</a></li>
+                    <li id="bottomTwitter" ><a href="#">Twitter</a></li>
                     <li>
                         <div id="signinButton">
                             <span class="g-signin"
@@ -126,6 +129,8 @@
                             </span>
                         </div>
                     </li>
+                    <li id="bottomLogout" class="hide"><a href="#" id="fireLogout">Logout</a></li>
+                    <li id="bottomBack" class="hide"><a href="#" id="offerBack">Back</a></li>
                 </ul>
             </div>
         </nav>
