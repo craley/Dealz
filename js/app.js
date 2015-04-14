@@ -100,7 +100,8 @@ var App = (function (window, $, undefined) {
             
         } else if(state === SEARCH){
             if(offersVisible){
-                
+                $('div').remove('#offerfield');
+                offersVisible = false;
             }
             loginFrame.hide();
             searchFrame.show();
@@ -131,6 +132,8 @@ var App = (function (window, $, undefined) {
             category = $(this).text();
             return false;
         });
+        $('#offerBack').on('click', offersBackHandler);
+        installProductHandlers();
         changeState(SEARCH);
     }
     
@@ -268,7 +271,7 @@ var App = (function (window, $, undefined) {
         //holder.empty();//blow login away
         loginComponent = holder.children().detach();//save children
         
-        holder.html(content);
+        holder.append(content);//changed from html()
         //load bars
         var topList = $('#chooser');
         topList.empty();
@@ -285,16 +288,16 @@ var App = (function (window, $, undefined) {
         uid = document.getElementById('profilefield').dataset.uid;
     };
     //fired when user presses 'Back'
-    var stateChange = function(e){
-        if(!e.state) return;
-        var loc = document.location;
-        var state = e.state;
-        //console.log('Loc: ' + loc + ', state: ' + state.page);
-        if(state.page == 'login'){
-            reloadLogin();
-        }
-        return false;
-    };
+//    var stateChange = function(e){
+//        if(!e.state) return;
+//        var loc = document.location;
+//        var state = e.state;
+//        //console.log('Loc: ' + loc + ', state: ' + state.page);
+//        if(state.page == 'login'){
+//            reloadLogin();
+//        }
+//        return false;
+//    };
     var reloadLogin = function(){
         var topList = $('#chooser');
         topList.empty();
@@ -314,8 +317,9 @@ var App = (function (window, $, undefined) {
     };
     
     var logoutHandler = function(){
-        reloadLogin();
+        //reloadLogin();
         //window.history.back();//history
+        stateChange(LOGIN);
         return false;
     };
     var searchSuccess = function(data){
@@ -403,7 +407,7 @@ var App = (function (window, $, undefined) {
             //make product screen invisible
             $('#productfield').addClass('hide');
             var holder = $('#main');
-            holder.append($(html));
+            holder.append(html);//removed $ from html
             //attach back handler
             //var bottom = $('#bottomload');
             //bottom.html('<li><a href id="fireLogout">Logout</a></li>');
@@ -418,10 +422,13 @@ var App = (function (window, $, undefined) {
         
     };
     var offersBackHandler = function(e){
-        $('div').remove('#offerfield');
-        //$('#offerfield').remove();//dont work
-        $('#productfield').removeClass('hide');
-        $('#offerBack').remove();
+//        $('div').remove('#offerfield');
+//        //$('#offerfield').remove();//dont work
+//        $('#productfield').removeClass('hide');
+//        $('#offerBack').remove();
+        
+        
+        changeState(PRODUCTS);
         offersVisible = false;
         return false;
     };
