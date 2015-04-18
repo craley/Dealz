@@ -24,6 +24,18 @@
                     <li><a href="#">All</a></li>
                     <li><a href="#">Beauty</a></li>
                     <li><a href="#">Books</a></li>
+                    <li><a href="#">Apparel</a></li>
+                    <li><a href="#">Automotive</a></li>
+                    <li><a href="#">Digital Music</a></li>
+                    <li><a href="#">Electronics</a></li>
+                    <li><a href="#">Jewelry</a></li>
+                    <li><a href="#">Music</a></li>
+                    <li><a href="#">Pet Supplies</a></li>
+                    <li><a href="#">Shoes</a></li>
+                    <li><a href="#">Software</a></li>
+                    <li><a href="#">Tools</a></li>
+                    <li><a href="#">Toys</a></li>
+                    <li><a href="#">Video Games</a></li>
                 </ul>
             </div>
         </div>
@@ -65,15 +77,22 @@
             </thead>
             <tbody>
                 <?php if (isset($products) && !empty($products)): ?>
-                    <?php $count = 0; ?>
                     <?php foreach ($products as $value): ?>
-                        <tr <?php echo "id='row$count'"; ?>>
-                            <td class="col-xs-1"><button class="btn btn-default" type="button">offers</button></td>
+                        <tr id="row<?php echo $value['asin']; ?>">
+                            <td class="col-xs-1"><button id="offer<?php echo $value['asin']; ?>" class="btn btn-default" type="button">offers</button></td>
                             <td class="col-xs-4"><p><?php echo $value['title']; ?></p></td>
-                            <td class="col-xs-4"><p><?php echo $value['maker']; ?></p></td>
+                            <td class="col-xs-2"><p><?php echo $value['maker']; ?></p></td>
                             <td class="col-xs-1"><p><?php echo $value['asin']; ?></p></td>
-                            <td class="col-xs-1"><p><?php echo $value['priority']; ?></p></td>
-                            <td class="col-xs-1"><a href="#"><span class="glyphicon glyphicon-trash"></span></a></td>
+                            <td class="col-xs-2">
+                                <div class="form-group">
+                                    <select class="form-control" id="sticky<?php echo $value['asin']; ?>">
+                                        <option value="normal" <?php if($value['priority'] == 0) echo "selected='selected'"; ?>>Normal</option>
+                                        <option value="email" <?php if($value['priority'] == 1) echo "selected='selected'"; ?>>Email</option>
+                                        <option value="text" <?php if($value['priority'] == 2) echo "selected='selected'"; ?>>Text</option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="col-xs-1"><a href="#" id="remove<?php echo $value['asin']; ?>"><span class="glyphicon glyphicon-trash"></span></a></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -123,7 +142,7 @@
             <div class="checkbox">
                 <label><input type="checkbox"> Auto-login</label>
             </div>
-            <button type="button" class="btn btn-primary">Update</button>
+            <button type="button" id="updateFire" class="btn btn-primary">Update</button>
         </form>
     </div>
 </div>

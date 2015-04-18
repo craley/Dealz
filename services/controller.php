@@ -140,14 +140,6 @@ if ($action == 'login') {
                 
             }
             
-            
-//            $uid = $db->emailExists($email);
-//            if ($uid > -1) {
-//                $db->setFirstLast($uid, $firstName, $lastName);
-//            } else {
-//                $db->insertUserVendor($email, $firstName, $lastName);
-//                $uid = $db->emailExists($email);
-//            }
             //load user data
             $profile = $db->getUser($uid);
             $products = $db->getProducts($uid); //possible products
@@ -198,7 +190,14 @@ if ($action == 'login') {
     }
     exit();
 } else if ($action == 'remove') {
-    
+    if (isset($_POST['uid']) && isset($_POST['asin']) && !empty($_POST['uid']) && !empty($_POST['asin'])) {
+        require_once 'utilities.php';
+        require_once 'database.php';
+        $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
+        $db = new Database($credents);
+        $db->removeProduct($_POST['uid'], $_POST['asin']);
+    }
+    exit();
 } else if($action == 'offer'){
     if(isset($_GET['asin']) and !empty($_GET['asin'])){
         require_once 'utilities.php';
@@ -210,6 +209,32 @@ if ($action == 'login') {
     }
     exit();
 } else if($action == 'update'){
+    $params = [];
+    if(isset($_POST['uid']) and !empty($_POST['uid'])){
+        if(isset($_POST['firstName']) and !empty($_POST['firstName'])){
+            $params['firstName'] = $_POST['firstName'];
+        }
+        if(isset($_POST['lastName']) and !empty($_POST['lastName'])){
+            $params['lastName'] = $_POST['lastName'];
+        }
+        if(isset($_POST['phone']) and !empty($_POST['phone'])){
+            $params['phone'] = $_POST['phone'];
+        }
+        if(isset($_POST['carrier']) and !empty($_POST['carrier'])){
+            $params['carrier'] = $_POST['carrier'];
+        }
+        if(isset($_POST['email']) and !empty($_POST['email'])){
+            $params['email'] = $_POST['email'];
+        }
+        if(isset($_POST['username']) and !empty($_POST['username'])){
+            $params['username'] = $_POST['username'];
+        }
+        require_once 'utilities.php';
+        require_once 'database.php';
+        $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
+        $db = new Database($credents);
+        $db->updateProfile($_POST['uid'], $params);
+    }
     exit();
 }
 echo "Not found";

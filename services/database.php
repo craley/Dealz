@@ -229,11 +229,59 @@ class Database {
         }
         return -1;
     }
+    /**
+     * Members: uid, username, firstName, lastName, email, hash, salt, phone, carrier, autolog
+     * All params are optional except uid. If no params provided, it just quits.
+     * @param type $uid
+     */
+    public function updateProfile($uid, $params){
+        $query = "UPDATE members SET";
+        $upsert = []; $x = 0;
+        if(isset($params['username']) and !empty($params['username'])){
+            $query .= ' username=?';
+            $upsert[$x++] = $params['username'];
+        }
+        if(isset($params['firstName']) and !empty($params['firstName'])){
+            $query .= ' firstName=?';
+            $upsert[$x++] = $params['firstName'];
+        }
+        if(isset($params['lastName']) and !empty($params['lastName'])){
+            $query .= ' lastName=?';
+            $upsert[$x++] = $params['lastName'];
+        }
+        if(isset($params['email']) and !empty($params['email'])){
+            $query .= ' email=?';
+            $upsert[$x++] = $params['email'];
+        }
+        if(isset($params['phone']) and !empty($params['phone'])){
+            $query .= ' phone=?';
+            $upsert[$x++] = $params['phone'];
+        }
+        if(isset($params['carrier']) and !empty($params['carrier'])){
+            $query .= ' carrier=?';
+            $upsert[$x++] = $params['carrier'];
+        }
+        //Quit on nothing.
+        if($x == 0) return;
+        $query .= " WHERE uid=:uid";
+        try {
+            $conn = new PDO($this->dsn, $this->user, $this->pswd);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); //only for testing purposes.
 
-    //Data Export
-    public function getUserByCredentials($username, $pswd){
-        
+            $pstmt = $conn->prepare($query);
+            for($y = 0; $y < $x; $y++){
+                $pstmt->bindValue($y, $upsert[$y]);
+            }
+            $pstmt->bindValue(":uid", $uid);
+            $pstmt->execute();
+            return $pstmt->rowCount();
+        } catch (PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return -1;
     }
+    
+    
     public function getUser($uid){//ok
         try {
             $conn = new \PDO($this->dsn, $this->user, $this->pswd);

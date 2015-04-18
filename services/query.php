@@ -31,7 +31,7 @@
 </table>
 <?php if ($data['totalPages'] > 1): ?>
     <nav>
-        <ul class="pagination">
+        <ul class="pagination" id="searchPage">
 
             <?php
             $range = min([$data['totalPages'], 5]);
@@ -47,7 +47,7 @@
             }
             ?>
 
-            <li <?php if ($data['page'] == 0) echo "class='disabled'"; ?>>
+            <li  id="searchPrev" <?php if ($data['page'] == 0) echo "class='disabled'"; ?>>
                 <a href="#" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
@@ -55,19 +55,18 @@
 
             <?php for ($i = $data['page'] - $leftpad; $i <= $data['page'] + $rightpad; $i++): ?>
                 <li <?php if ($i == $data['page']) echo "class='active'"; ?>><a href="#"><?php echo $i; ?></a></li>
-    <?php endfor; ?>
+            <?php endfor; ?>
 
 
-            <li <?php if ($data['page'] == $data['totalPages'] - 1) echo "class='disabled'"; ?>>
+            <li  id="searchNext" <?php if ($data['page'] == $data['totalPages'] - 1) echo "class='disabled'"; ?>>
                 <a href="#" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
         </ul>
     </nav>
-    <?php
 
- endif;
+    <?php endif;
 
 
 

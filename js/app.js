@@ -60,6 +60,9 @@ function signInCallback(authResult) {
 
 //create global footprint for external callbacks.
 var App = (function (window, $, undefined) {
+    var phase = 1;
+    var uid;
+    
     var LOGIN = 1;
     var SEARCH = 2;
     var PRODUCTS = 3;
@@ -84,11 +87,16 @@ var App = (function (window, $, undefined) {
     var searchFrame;// = $('#searchfield')
     var productFrame;// = $('#productfield');
     var profileFrame;// = $('#profilefield');
-    var offerFrame;
     
     //state machine
     function changeState(state){
         if(state === LOGIN){
+            if(offersVisible){
+                $('div').remove('#offerfield');
+                offersVisible = false;
+                offerBack.hide();
+            }
+            phase = 1;
             searchButton.hide();
             productButton.hide();
             profileButton.hide();
@@ -97,27 +105,60 @@ var App = (function (window, $, undefined) {
             googleButton.show();
             twitterButton.show();
             facebookButton.show();
+            loginFrame.show();
             
         } else if(state === SEARCH){
             if(offersVisible){
                 $('div').remove('#offerfield');
                 offersVisible = false;
+                offerBack.hide();
             }
             loginFrame.hide();
-            searchFrame.show();
-            productFrame.hide();
-            profileFrame.hide();
-            
+            searchFrame.removeClass('hide');
+            productFrame.addClass('hide');
+            profileFrame.addClass('hide');
+            searchButton.show();
+            productButton.show();
+            profileButton.show();
+            logoutButton.show();
+            offerBack.hide();
+            googleButton.hide();
+            twitterButton.hide();
+            facebookButton.hide();
             
         } else if(state === PRODUCTS){
-            
+            if(offersVisible){
+                $('div').remove('#offerfield');
+                offersVisible = false;
+                offerBack.hide();
+            }
+            loginFrame.hide();
+            searchFrame.addClass('hide');
+            productFrame.removeClass('hide');
+            profileFrame.addClass('hide');
         } else if(state === PROFILE){
-            
+            if(offersVisible){
+                $('div').remove('#offerfield');
+                offersVisible = false;
+                offerBack.hide();
+            }
+            loginFrame.hide();
+            searchFrame.addClass('hide');
+            productFrame.addClass('hide');
+            profileFrame.removeClass('hide');
         } else if(state === OFFERS){
-            
+            offersVisible = true;
+            loginFrame.hide();
+            searchFrame.addClass('hide');
+            productFrame.addClass('hide');
+            profileFrame.addClass('hide');
+            offerBack.show();
         }
     }
-    function homePreamble(){
+    function homePreamble(data){
+        if(phase === 2) return;//Multi-click protection
+        mainContent.append(data);
+        phase = 2;
         searchFrame = $('#searchfield');
         productFrame = $('#productfield');
         profileFrame = $('#profilefield');
@@ -125,15 +166,23 @@ var App = (function (window, $, undefined) {
         $('#chooser li a').click(siteRouter);  
         $('#queryFire').click(queryHandler);
         $('#queryCond li a').on('click', function(e){
-            condition = $(this).text();
+            searchOptions.condition = $(this).text();
             return false;
         });
         $('#queryCategory li a').on('click', function(e){
-            category = $(this).text();
+            searchOptions.category = $(this).text();
             return false;
         });
+        $('#fireLogout').on('click', logoutHandler);
         $('#offerBack').on('click', offersBackHandler);
+        $('#updateFire').on('click', updateHandler);
         installProductHandlers();
+        //record user product asin's
+        fillAsins();
+        //force bootstrap dropdowns to close on click
+        $(".dropdown-menu a").click(function() {
+            $(this).closest(".dropdown-menu").prev().dropdown("toggle");
+        });
         changeState(SEARCH);
     }
     
@@ -167,7 +216,7 @@ var App = (function (window, $, undefined) {
     };
     //Login Callbacks
     var loginSuccess = function (data) {
-        loadApp(data);
+        homePreamble(data);
     };
     var loginFailure = function () {
         $('#errmsgLogin').text('  Invalid Credentials');
@@ -210,7 +259,7 @@ var App = (function (window, $, undefined) {
      * Handle successful registration.
      */
     var registerSuccess = function(data){
-        loadApp(data);
+        homePreamble(data);
     };
     /*
      * Handle registration error.
@@ -221,7 +270,30 @@ var App = (function (window, $, undefined) {
     /*
      * Updates user's profile.
      */
-    var updateHandler = function(){
+    var updateHandler = function(e){
+        var info = {};
+        info.uid = uid;
+        info.action = 'update';
+        var username = $('#profileUsername').val();
+        var first = $('#profileFirst').val();
+        var last = $('#profileLast').val();
+        var phone = $('#profilePhone').val();
+        var carrier = $('#profileCarrier').val();
+        var email = $('#profileEmail').val();
+        
+        if(username) info['username'] = username;
+        if(first) info['firstName'] = first;
+        if(last) info['lastName'] = last;
+        if(phone) info['phone'] = phone;
+        if(carrier) info['carrier'] = carrier;
+        if(email) info['email'] = email;
+        
+        $.ajax({
+            type: "POST",
+            url: 'services/controller.php',
+            data: info
+        });
+        
         return false;
     };
     
@@ -229,105 +301,47 @@ var App = (function (window, $, undefined) {
     var siteRouter = function (e) {
         if (e.target) {
             var ident = e.target.id;
-            //handle a jump from offer screen if out
-            if(offersVisible){
-                //blow it away
-                $('div').remove('#offerfield');
-                //$('#offerfield').remove();//dont work
-                $('#productfield').removeClass('hide');
-                $('#offerBack').remove();
-                offersVisible = false;
-            }
             if (ident == '1') {//search
-                $('#productfield').addClass('hide');
-                $('#profilefield').addClass('hide');
-                $('#searchfield').removeClass('hide');
+                changeState(SEARCH);
             } else if (ident == 2) {//product
-                $('#searchfield').addClass('hide');
-                $('#profilefield').addClass('hide');
-                $('#productfield').removeClass('hide');
+                changeState(PRODUCTS);
             } else if (ident == 3) {//profile
-                $('#productfield').addClass('hide');
-                $('#searchfield').addClass('hide');
-                $('#profilefield').removeClass('hide');
+                changeState(PROFILE);
             }
         }
         return false;
     };
     
     function googleSuccess(html) {
-        //loadApp(html);
-        
-        homePreamble();
-        
+        homePreamble(html);
     }
     function googleFailure(){
-        alert("Failed");
+        //
     }
-    var uid;
-    var loginComponent;
-    var loadApp = function(content){
-        var holder = $('#main');
-        //holder.empty();//blow login away
-        loginComponent = holder.children().detach();//save children
-        
-        holder.append(content);//changed from html()
-        //load bars
-        var topList = $('#chooser');
-        topList.empty();
-        topList.html("<li><a id='1' href='#'>Search</a></li><li><a id='2' href='#'>Products</a></li><li><a id='3' href='#'>Profile</a></li>");
-        var bottomList = $('#bottomload');
-        $('#signinButton').attr('style', 'display: none');
-        bottomList.html('<li><a href id="fireLogout">Logout</a></li>');
-        $('#fireLogout').on('click', logoutHandler);
-        setupHome();
-        
-        //var path = 'dealz';
-        //window.history.pushState({page: path}, 'title', path);//comment
-        
-        uid = document.getElementById('profilefield').dataset.uid;
-    };
-    //fired when user presses 'Back'
-//    var stateChange = function(e){
-//        if(!e.state) return;
-//        var loc = document.location;
-//        var state = e.state;
-//        //console.log('Loc: ' + loc + ', state: ' + state.page);
-//        if(state.page == 'login'){
-//            reloadLogin();
-//        }
-//        return false;
-//    };
-    var reloadLogin = function(){
-        var topList = $('#chooser');
-        topList.empty();
-        topList.html('<li><a href="#">Home</a></li>');
-        var holder = $('#main');
-        //blow it away
-        holder.empty();
-        //push login
-        loginComponent.appendTo(holder);
-        //deactivate logout button
-        //$('#fireLogout').attr('style', 'display: none');
-        //$('#signinButton').attr('style', 'display: block');
-        $('#fireLogout').hide();
-        $('#signinButton').show();
-        $('#fireLogin').click(loginHandler);
-        $('#fireRegister').click(registerHandler);
-    };
-    
+    /**
+     * Destroys the user's data.
+     * @returns {Boolean}
+     */
     var logoutHandler = function(){
         //reloadLogin();
         //window.history.back();//history
-        stateChange(LOGIN);
+        phase = 1; uid = -1;
+        $('div').remove('#searchfield');
+        $('div').remove('#productfield');
+        $('div').remove('#profilefield');
+        changeState(LOGIN);
         return false;
     };
-    var searchSuccess = function(data){
+    var searchSuccess = function(data){//each call obliterates, so no multi-click protection needed
         var holder = $('#searchload');
         holder.empty();
-        holder.html(data);
+        holder.html(data);//html replaces existing content! empty() not needed
+        var table = document.getElementById('searchTable');
+        searchOptions.page = parseInt(table.dataset.currentpage, 10);
+        searchOptions.totalPages = parseInt(table.dataset.totalpages, 10);
         //attach track button listeners.
         $('#searchTable button').on('click', addHandler);
+        $('#searchPage li').on('click', paginationHandler);
     };
     var searchFailure = function(){
         var holder = $('#searchload');
@@ -339,6 +353,9 @@ var App = (function (window, $, undefined) {
         var button = $(this);
         var cell = button.parent();
         var asin = cell.get(0).dataset.asin;
+        if($.inArray(asin, pkeys) !== -1){
+            return;//dupe detected
+        }
         var attribs = [];
         cell.children('p').each(function(){
             attribs.push($(this).text());
@@ -357,31 +374,109 @@ var App = (function (window, $, undefined) {
                 maker: attribs[1]
             }
         });
+        //add handlers to new elements
         installProductHandlers();
         return false;
     };
     var installProductHandlers = function(){
         $('#productTable button').on('click', offerHandler);
         $('#productTable a').on('click', removeHandler);
-        
+        $('#productTable select').on('change', priorityHandler);
     };
     var addEntry = function(asin, title, maker, priority){
         var table = $('#productTable');
-        var ent = "<tr><td class='col-xs-1'><button class='btn btn-default' type='button'>offers</button></td>";
-        ent += "<td class='col-xs-4'>" + title + "</td>";
-        ent += "<td class='col-xs-4'>" + maker + "</td>";
-        ent += "<td class='col-xs-1'>" + asin + "</td>";
-        ent += "<td class='col-xs-1'>" + priority + "</td>";
-        ent += "<td class='col-xs-1'><a href='#'><span class='glyphicon glyphicon-trash'></span></a></td></tr>";
-        table.append(ent);
+        //var count = $('#productTable tr').length - 1;//count jquery children
+        
+        entry.asin = asin;
+        entry.title = title;
+        entry.maker = maker;
+        entry.priority = priority;
+        //var ent = "<tr><td class='col-xs-1'><button class='btn btn-default' type='button'>offers</button></td>";
+        //ent += "<td class='col-xs-4'>" + title + "</td>";
+        //ent += "<td class='col-xs-4'>" + maker + "</td>";
+        //ent += "<td class='col-xs-1'>" + asin + "</td>";
+        //ent += "<td class='col-xs-1'>" + priority + "</td>";
+        //ent += "<td class='col-xs-1'><a href='#'><span class='glyphicon glyphicon-trash'></span></a></td></tr>";
+        table.append(entry.toString());
+    };
+    var pkeys;
+    var fillAsins = function(){
+        pkeys = [];
+        $('#productTable tr').each(function(){
+            var id = this.id;
+            if(id && id.indexOf("row") > -1){
+                pkeys.push(id.substring(3));
+            }
+        });
+    };
+    var searchOptions = {
+        category: 'All',
+        condition: 'All',
+        minPrice: 'None',
+        maxPrice: 'None',
+        page: 1,
+        keyword: '',
+        totalPages: 1,
+        action: 'query'
+    };
+    
+    var entry = {
+        asin: 0,
+        title: '',
+        maker: '',
+        priority: 0,
+        toString: function(){
+            var out = "<tr id='row" + this.asin + "'>";
+            out += "<td class='col-xs-1'><button id='offer" + this.asin + "' class='btn btn-default' type='button'>offers</button></td>";
+            out += "<td class='col-xs-4'>" + this.title + "</td>";
+            out += "<td class='col-xs-2'>" + this.maker + "</td>";
+            out += "<td class='col-xs-1'>" + this.asin + "</td>";
+            out += "<td class='col-xs-2'><div class='form-group'><select class='form-control' id='sticky" + this.asin + "'>";
+            out += "<option value='normal'";
+            if(this.priority === 0) out += " selected='selected'";
+            out += ">Normal</option>";
+            
+            out += "<option value='email'";
+            if(this.priority === 1) out += " selected='selected'";
+            out += ">Email</option>";
+            
+            out += "<option value='text'";
+            if(this.priority === 2) out += " selected='selected'";
+            out += ">Text</option>";
+            
+            out += "</select></div></td>";
+            out += "<td class='col-xs-1'><a id='remove" + this.asin + "' href='#'><span class='glyphicon glyphicon-trash'></span></a></td>";
+            out += "</tr>";
+            return out;
+        }
     };
     //product remove
     var removeHandler = function(e){
-        //blow away row
-        //notify db via ajax
+        
+        if(e.target){
+            //parents drives up DOM to TR
+            var snag = $(e.target).parents('tr');
+            var row = snag.get(0);
+            //extract asin for ajax
+            var asin = row.id.substring(3);//from 3 to end
+            //blow it away
+            $('#' + row.id).remove();
+            //notify base
+            $.ajax({
+                type: "POST",
+                url: 'services/controller.php',
+                data: {
+                    action: 'remove',
+                    uid: uid,
+                    asin: asin
+                }
+            });//no response needed.
+        }
+        return false;
     };
     //see product's offers
     var offerHandler = function(e){
+        
         var crew = $(this).parent().parent().find('p');
         var asin = $(crew.get(2)).text();
         //var title = $(crew.get(0)).text();
@@ -403,115 +498,90 @@ var App = (function (window, $, undefined) {
     };
     var offersVisible = false;
     var offerSuccess = function(html){
+        if(offersVisible) return;//Multi-click protection
         if(html){
-            //make product screen invisible
-            $('#productfield').addClass('hide');
-            var holder = $('#main');
-            holder.append(html);//removed $ from html
-            //attach back handler
-            //var bottom = $('#bottomload');
-            //bottom.html('<li><a href id="fireLogout">Logout</a></li>');
-            offersVisible = true;
-            
-            $('#bottomload').append($('<li><a href id="offerBack">Back</a></li>'));
-            $('#offerBack').on('click', offersBackHandler);
+            //var holder = $('#main');
+            mainContent.append(html);
+            changeState(OFFERS);
         }
-        
     };
     var offerFailure = function(){
         
     };
     var offersBackHandler = function(e){
-//        $('div').remove('#offerfield');
-//        //$('#offerfield').remove();//dont work
-//        $('#productfield').removeClass('hide');
-//        $('#offerBack').remove();
-        
-        
         changeState(PRODUCTS);
         offersVisible = false;
         return false;
     };
     //Search button
-    var category;
-    var condition;
-    var page;
     var queryHandler = function(e){
         //gather query params
-        var keyword = $('#keywords').val();
-        var cat = category || 'All';
-        var cond = condition || 'All';
-        var pg = page || 1;
-        if(!keyword) return;
+        searchOptions.keyword = $('#keywords').val();
+        searchOptions.category = searchOptions.category || 'All';
+        searchOptions.condition = searchOptions.condition || 'All';
+        searchOptions.page = searchOptions.page || 1;
+        if(!searchOptions.keyword) return;
         $.ajax({
             type: "GET",
             url: 'services/controller.php',
-            data: {
-                action: 'query',
-                keyword: keyword,
-                category: cat,
-                page: pg,
-                condition: cond
-            },
+            data: searchOptions,
+            success: searchSuccess,
+            error: searchFailure,
+            dataType: 'html'
+        });
+        return false;
+    };
+    var fireSearchQuery = function(){
+        if(!searchOptions.keyword) return;
+        $.ajax({
+            type: "GET",
+            url: 'services/controller.php',
+            data: searchOptions,
             success: searchSuccess,
             error: searchFailure,
             dataType: 'html'
         });
     };
-    
-    /*
-     * Page Creation
-     */
-    
-    //Setup Login Screen
-    var setupLogin = function () {
+    var paginationHandler = function(e){
+        var target = e.target;
+        if(target.nodeName == 'SPAN'){
+            target = $(target).parents('li').get(0);
+        }
+        if(target.id === 'searchPrev'){
+            if(searchOptions.page > 1){
+                searchOptions.page--;
+                fireSearchQuery();
+            }
+        } else if(target.id === 'searchNext'){
+            if(searchOptions.page < searchOptions.totalPages){
+                searchOptions.page++;
+                fireSearchQuery();
+            }
+        } else {
+            var page = $(target).text();
+            if(!$.isNumeric(page)) return;
+            searchOptions.page = parseInt(page, 10);
+            fireSearchQuery();
+        }
+        return false;
+    };
+    var priorityHandler = function(e){
+        var select = e.target;
+        var selid = select.id;
+        var val = ($(select).children('option:selected')).val();
+        var asin = selid.substring(6);
+        //console.log(asin);
+        return false;
+    };
+
+    $(function(){
         $('#fireLogin').click(loginHandler);
         $('#fireRegister').click(registerHandler);
-        //window.history.replaceState({page:'login'}, 'title', 'login');//history
-        //window.addEventListener('popstate', stateChange, false);
-    };
-    
-    //Setup Home Screen
-    var setupHome = function () {
-        //set site nav
-        
-
-        //Primary routing via hashchange: back button works.
-//        window.addEventListener('hashchange', function (e) {
-//            if (window.location.hash == '#search') {
-//                $('#productfield').addClass('hide');
-//                $('#profilefield').addClass('hide');
-//                $('#searchfield').removeClass('hide');
-//            } else if (window.location.hash == '#products') {
-//                $('#searchfield').addClass('hide');
-//                $('#profilefield').addClass('hide');
-//                $('#productfield').removeClass('hide');
-//            } else if (window.location.hash == '#profile') {
-//                $('#productfield').addClass('hide');
-//                $('#searchfield').addClass('hide');
-//                $('#profilefield').removeClass('hide');
-//            }
-//        }, false);
-        $('#chooser li a').click(siteRouter);  
-        $('#queryFire').click(queryHandler);
-        $('#queryCond li a').on('click', function(e){
-            condition = $(this).text();
-            return false;
-        });
-        $('#queryCategory li a').on('click', function(e){
-            category = $(this).text();
-            return false;
-        });
-        installProductHandlers();
-    };
-
-    //testing only
-    setupLogin();
+        changeState(LOGIN);
+    });
 
     //public interface for 3rd party vendors
     return {
-        setupLogin: setupLogin,
-        setupHome: setupHome,
         googleSuccess: googleSuccess,
         googleFailure: googleFailure
     };
