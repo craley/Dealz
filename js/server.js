@@ -1,22 +1,40 @@
 /* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The server subsystem encapsulates all the
+ * details of interaction with the server.
+ * 
  */
 
 App = (function(window, $, module){
     var app = module || {};
     
-    var sv = app.sv = {};
+    var sv = app.sv || {};
+    var core = app.core || {};
     
-    sv.loginSuccess = function(data){
-        app.core.loadUser(data);
+    
+    //User Login
+    sv.attemptLogin = function(username, pswd){
+        $.ajax({
+            type: "POST",
+            url: 'services/controller.php',
+            data: {
+                action: 'login',
+                userLogin: username,
+                pswd: pswd
+            },
+            success: sv.loginSuccess,
+            error: sv.loginFailure,
+            dataType: 'html'
+        });
+    };
+    
+    sv.loginSuccess = function(data){//could get rid of this
+        core.loadUser(data);
     };
     sv.loginFailure = function(){
         
     };
     
-    
+    //User Registration
     sv.serverRegister = function(username, pswd, email){
         $.ajax({
             type: "POST",
@@ -39,6 +57,16 @@ App = (function(window, $, module){
         
     };
     
+    sv.searchQuery = function(params){
+        $.ajax({
+            type: "GET",
+            url: 'services/controller.php',
+            data: params,
+            success: searchSuccess,
+            error: searchFailure,
+            dataType: 'html'
+        });
+    };
     
     return app;
     

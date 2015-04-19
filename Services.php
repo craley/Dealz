@@ -25,27 +25,8 @@
  * Keywords=kat von d&
  * ResponseGroup=Images,ItemAttributes,Offers
  * 
- * Now, they need to be sorted:
- * 
- * AWSAccessKeyId=---------
- * AssociateTag=-------
- *  Condition=New
- *  Keywords=kat%20von%20d
- *  Operation=ItemSearch
- * ResponseGroup=Images%2CItemAttributes%2COffers
- * SearchIndex=Beauty
- * Service=AWSECommerceService
- * Timestamp=2015-03-28T14%3A41%3A24.000Z
- *   Version=2011-08-01
- * 
  * String to Sign: GET
  *   webservices.amazon.com/onca/xml
- *   AWSAccessKeyId=--------&AssociateTag=--------&Condition=New&Keywords=kat%20von%20d&Operation=ItemSearch&ResponseGroup=Images%2CItemAttributes%2COffers&SearchIndex=Beauty&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A41%3A24.000Z&Version=2011-08-01
- * 
- * Finished signed url:
- * 
- * http://webservices.amazon.com/onca/xml?AWSAccessKeyId=-------&AssociateTag=------&Condition=New&Keywords=kat%20von%20d&Operation=ItemSearch&ResponseGroup=Images%2CItemAttributes%2COffers&SearchIndex=Beauty&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A41%3A24.000Z&Version=2011-08-01&Signature=---------------
- * 
  */
 
 /*
@@ -60,17 +41,8 @@
  *  Timestamp=2015-03-28T14%3A57%3A36.000Z
  *  Version=2011-08-01
  * 
- * String to sign:
- *  GET
- *  webservices.amazon.com/onca/xml
- *  AWSAccessKeyId=--------------&AssociateTag=-------------&Condition=New&IdType=ASIN&ItemId=B00SB0RKT0&Operation=ItemLookup&ResponseGroup=Images%2CItemAttributes%2COffers&Service=AWSECommerceService&Timestamp=2015-03-28T14%3A57%3A36.000Z&Version=2011-08-01
- * 
  * 
  */
-
-
-//get all offers: Offers
-//get best offer: OfferSummary
 
 //$uri = awsRequest("VideoGames", "call of duty", "Images", "ItemSearch", "1");
 

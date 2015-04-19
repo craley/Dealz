@@ -12,9 +12,6 @@
                     <li><a href="#">Used</a></li>
                 </ul>
             </div>
-            <button type="button" class="btn btn-default">Price</button>
-
-            <input type="hidden" value="" id="currentPage">
 
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -38,7 +35,21 @@
                     <li><a href="#">Video Games</a></li>
                 </ul>
             </div>
+            <div class="btn-group">
+                <span class="label label-default">Min </span>
+            </div>
+            <div class="btn-group">
+                <input type="text" class="form-control" id="minPrice">
+            </div>
+            <div class="btn-group">
+                <span class="label label-default">Max </span>
+            </div>
+            <div class="btn-group">
+                <input type="text" class="form-control" id="maxPrice">
+            </div>
         </div>
+        
+        
     </div>
     <!-- Search bar -->
     <div class="panel-body">
@@ -135,8 +146,13 @@
                 </div>
                 <div class="col-xs-6 form-group">
                     <label for="profileCarrier">Carrier</label>
-                    <input type="text" class="form-control" id="profileCarrier"
-                           <?php if (isset($profile['carrier']) && !empty($profile['carrier'])) echo "value='{$profile['carrier']}'"; ?>>
+                    <select id="profileCarrier" class="form-control">
+                        <option value="0" <?php if($profile['carrier'] == 0) echo "selected='selected'"; ?>>Tmobile</option>
+                        <option value="1" <?php if($profile['carrier'] == 1) echo "selected='selected'"; ?>>Verizon</option>
+                        <option value="2" <?php if($profile['carrier'] == 2) echo "selected='selected'"; ?>>Sprint</option>
+                        <option value="3" <?php if($profile['carrier'] == 3) echo "selected='selected'"; ?>>Atat</option>
+                        <option value="4" <?php if($profile['carrier'] == 4) echo "selected='selected'"; ?>>Bell South</option>
+                    </select>
                 </div>
             </div>
             <div class="checkbox">

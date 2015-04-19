@@ -1,5 +1,5 @@
 <div id="offerfield" class="panel panel-primary">
-    <div class="panel-heading">Offers for <?php echo "" . $data['asin']; ?></div>
+    <div class="panel-heading">Offers for <?php echo $data['asin']; ?></div>
     <div class="panel-body" id="offerload">
         <table class="table table-bordered" id="offerTable">
             <thead>
@@ -29,5 +29,6 @@
                 <?php endif; ?>
             </tbody>
         </table>
+        <p id="offerLink"><a href="<?php echo $data['link']; ?>" target="_blank">Purchase</a></p>
     </div>
 </div>

@@ -90,6 +90,18 @@ div.input-group {
     margin-bottom: 15px;
 }
 
+/*  Purchase Link on Offers Page */
+#offerLink {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.3em;
+}
+
+
+#offerTable td {
+  text-transform: capitalize;
+}
+
 /* Portrait & landscape phone */
 @media (max-width: 480px) {
     #myCarousel .item {

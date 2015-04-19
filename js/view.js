@@ -1,17 +1,37 @@
 /* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The view subsystem encapsulates the DOM. Event handlers
+ * update the gui component's models for use in other parts
+ * of the system.
+ * 
  */
 
-//dependencies: callbacks
-
-App = (function(window, $, module){
+App = (function (window, $, module) {
     var app = module || {};
-    
-    var handler = app.handler = {};
-    var core = app.core;
-    
+
+    var view = app.view || {};
+    var core = app.core || {};
+
+    var topbar = $('#chooser');
+    var bottombar = $('#bottomload');
+    //lower buttons(containers, not actual button)
+    var googleButton = $('#signinButton');
+    var logoutButton = $('#bottomLogout');
+    var offerBack = $('#bottomBack');
+    var twitterButton = $('#bottomTwitter');
+    var facebookButton = $('#bottomFacebook');
+    //top buttons
+    var searchButton = $('#topSearch');
+    var productButton = $('#topProducts');
+    var profileButton = $('#topProfile');
+
+    var mainContent = $('#main');
+    var loginFrame = $('#myCarousel');
+    var searchFrame;// = $('#searchfield')
+    var productFrame;// = $('#productfield');
+    var profileFrame;// = $('#profilefield');
+
+    //Gui Models
+
     var searchOptions = {
         category: 'All',
         condition: 'All',
@@ -20,8 +40,20 @@ App = (function(window, $, module){
         page: 1,
         keyword: ''
     };
-    
-    handler.loginHandler = function (e) {
+
+    var product = {
+        asin: '',
+        title: '',
+        maker: ''
+    };
+    var products = [];
+
+    var profile = {
+        username: '',
+        firstName: ''
+    };
+
+    view.loginHandler = function (e) {
         var username = $('#userLogin').val();
         var pswd = $('#pswdLogin').val();
         if (!username) {
@@ -33,43 +65,32 @@ App = (function(window, $, module){
             $('#pswdLogin').focus();
             return;
         }
-        $.ajax({
-            type: "POST",
-            url: 'services/controller.php',
-            data: {
-                action: 'login',
-                userLogin: username,
-                pswd: pswd
-            },
-            success: app.cb.loginSuccess,
-            error: app.cb.loginFailure,
-            dataType: 'html'
-        });
+        core.loginAttempt(username, pswd);
         return false;
     };
-    
-    handler.registerHandler = function (e) {
+
+    view.registerHandler = function (e) {
         var username = $('#userRegister').val();
         var pswd = $('#pswdRegister').val();
         var email = $('#emailRegister').val();
-        if(!username){
+        if (!username) {
             alert("Must provide a username");
             $('#userRegister').focus();
             return;
-        } else if(!pswd){
+        } else if (!pswd) {
             alert("Must provide a password");
             $('#pswdRegister').focus();
             return;
-        } else if(!email){
+        } else if (!email) {
             alert("Must provide an email");
             $('#emailRegister').focus();
             return;
         }
-        core.registration();
+        core.registration(username, pswd, email);
         return false;
     };
-    
-    handler.navigation = function (e) {
+
+    view.navigation = function (e) {
         if (e.target) {
             var ident = e.target.id;
             if (ident == '1') {//search
@@ -82,48 +103,37 @@ App = (function(window, $, module){
         }
         return false;
     };
-    
-    handler.queryHandler = function(e){
+
+    view.queryHandler = function (e) {
         //gather query params
         var keyword = $('#keywords').val();
-        if(!keyword) return;
-        $.ajax({
-            type: "GET",
-            url: 'services/controller.php',
-            data: {
-                action: 'query',
-                keyword: keyword,
-                category: searchOptions.category,
-                page: searchOptions.page,
-                condition: searchOptions.condition
-            },
-            success: searchSuccess,
-            error: searchFailure,
-            dataType: 'html'
-        });
+        if (!keyword)
+            return;
+
     };
-    
-    handler.categoryListener = function(e){
+
+    view.categoryListener = function (e) {
         searchOptions.category = $(this).text() || 'All';
         return false;
     };
-    handler.conditionListener = function(e){
+    view.conditionListener = function (e) {
         searchOptions.condition = $(this).text() || 'All';
         return false;
     };
-    handler.pageListener = function(e){
+    view.pageListener = function (e) {
         searchOptions.page = $(this).text() || 1;
         return false;
     };
-    
-    handler.addHandler = function(e){
+    //Add Product button
+    view.addHandler = function (e) {
         var button = $(this);
         var cell = button.parent();
         var asin = cell.get(0).dataset.asin;
         var attribs = [];
-        cell.children('p').each(function(){
+        cell.children('p').each(function () {
             attribs.push($(this).text());
         });
+        
         //0: title 1: maker
         addEntry(asin, attribs[0], attribs[1], 0);
         //notify server
@@ -142,11 +152,107 @@ App = (function(window, $, module){
         installProductHandlers();
         return false;
     };
-    
-    handler.logoutHandler = function(){
-        
+
+    view.logoutHandler = function () {
+
+    };
+
+    //Gui Update
+    view.showLoginTab = function () {
+        searchButton.hide();
+        productButton.hide();
+        profileButton.hide();
+        logoutButton.hide();
+        offerBack.hide();
+        googleButton.show();
+        twitterButton.show();
+        facebookButton.show();
+        loginFrame.show();
+    };
+    view.showSearchTab = function () {
+        loginFrame.hide();
+        searchFrame.removeClass('hide');
+        productFrame.addClass('hide');
+        profileFrame.addClass('hide');
+        searchButton.show();
+        productButton.show();
+        profileButton.show();
+        logoutButton.show();
+        offerBack.hide();
+        googleButton.hide();
+        twitterButton.hide();
+        facebookButton.hide();
+    };
+    view.showProductsTab = function () {
+        loginFrame.hide();
+        searchFrame.addClass('hide');
+        productFrame.removeClass('hide');
+        profileFrame.addClass('hide');
+    };
+    view.showProfileTab = function () {
+        loginFrame.hide();
+        searchFrame.addClass('hide');
+        productFrame.addClass('hide');
+        profileFrame.removeClass('hide');
+    };
+    view.toggleOffersTab = function (show) {
+        if (show) {
+            loginFrame.hide();
+            searchFrame.addClass('hide');
+            productFrame.addClass('hide');
+            profileFrame.addClass('hide');
+            offerBack.show();
+        } else {
+            $('div').remove('#offerfield');
+            offerBack.hide();
+        }
+    };
+
+    view.loadSearchResults = function () {
+
     };
     
+    view.productTableAdd = function(asin){
+        
+    };
+    view.productTableRemove = function(asin){
+        
+    };
+
+    view.closeOfferWindow = function () {//phase out
+        $('div').remove('#offerfield');
+        offerBack.hide();
+    };
+
+    view.attachLoginListeners = function () {
+        $('#fireLogin').click(view.loginHandler);
+        $('#fireRegister').click(view.registerHandler);
+    };
+    view.attchHomeListeners = function () {
+        //Tabs
+        $('#chooser li a').click(view.navigation);
+        //Search button
+        $('#queryFire').click(view.queryHandler);
+        //Query: Condition
+        $('#queryCond li a').on('click', function (e) {
+            searchOptions.condition = $(this).text();
+            return false;
+        });
+        //Query: Category
+        $('#queryCategory li a').on('click', function (e) {
+            searchOptions.category = $(this).text();
+            return false;
+        });
+        //Logout button
+        $('#fireLogout').on('click', logoutHandler);
+        //Offers button
+        $('#offerBack').on('click', offersBackHandler);
+    };
+    view.attachProductListeners = function(){
+        $('#productTable button').on('click', offerHandler);
+        $('#productTable a').on('click', removeHandler);
+    };
+
     return app;
-    
+
 })(window, jQuery, App);

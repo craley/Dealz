@@ -152,6 +152,7 @@ function processOfferResults($res){
         $data['lowest_used'] = $xml->Items->Item->OfferSummary->LowestUsedPrice->FormattedPrice;
         $data['total_new'] = $xml->Items->Item->OfferSummary->TotalNew;
         $data['total_used'] = $xml->Items->Item->OfferSummary->TotalUsed;
+        $data['link'] = $xml->Items->Item->Offers->MoreOffersUrl;
         $data['offers'] = [];
         foreach($xml->Items->Item->Offers->Offer as $offer){
             $row['vendor'] = $offer->Merchant->Name;

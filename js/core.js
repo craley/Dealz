@@ -11,9 +11,9 @@ App = (function(window, $, module){
     
     app.uid; app.phase;
     //establish alias
-    var core = app.core = {};
+    var core = app.core || {};
     //shortcuts
-    var handler = app.handler;
+    var view = app.view;
     var sv = app.sv;
     
     core.LOGIN = 1;
@@ -22,37 +22,20 @@ App = (function(window, $, module){
     core.PROFILE = 4;
     core.OFFERS = 5;
     
-    var topbar = $('#chooser');
-    var bottombar = $('#bottomload');
-    //lower buttons(containers, not actual button)
-    var googleButton = $('#signinButton');
-    var logoutButton = $('#bottomLogout');
-    var offerBack = $('#bottomBack');
-    var twitterButton = $('#bottomTwitter');
-    var facebookButton = $('#bottomFacebook');
-    //top buttons
-    var searchButton = $('#topSearch');
-    var productButton = $('#topProducts');
-    var profileButton = $('#topProfile');
-    
-    var mainContent = $('#main');
-    var loginFrame = $('#myCarousel');
-    var searchFrame;// = $('#searchfield')
-    var productFrame;// = $('#productfield');
-    var profileFrame;// = $('#profilefield');
-    
     var offersVisible;
     
     //I. App Functionality
     
-    core.registration = function(){
-        sv.serverRegister();
+    core.registration = function(username, pswd, email){
+        sv.serverRegister(username, pswd, email);
+    };
+    core.loginAttempt = function(username, pswd){
+        sv.attemptLogin(username, pswd);
     };
     
     core.loadLogin = function(){
         app.phase = 1;
-        $('#fireLogin').click(handler.loginHandler);
-        $('#fireRegister').click(handler.registerHandler);
+        view.attachLoginListeners();
         changeState(core.LOGIN);
     };
     
@@ -62,19 +45,9 @@ App = (function(window, $, module){
         searchFrame = $('#searchfield');
         productFrame = $('#productfield');
         profileFrame = $('#profilefield');
+        //User's uid
         app.uid = document.getElementById('profilefield').dataset.uid;
-        $('#chooser li a').click(handler.navigation);  
-        $('#queryFire').click(handler.queryHandler);
-        $('#queryCond li a').on('click', function(e){
-            condition = $(this).text();
-            return false;
-        });
-        $('#queryCategory li a').on('click', function(e){
-            category = $(this).text();
-            return false;
-        });
-        $('#fireLogout').on('click', logoutHandler);
-        $('#offerBack').on('click', offersBackHandler);
+        view.attachHomeListeners();
         installProductHandlers();
         changeState(SEARCH);
     };
@@ -91,9 +64,9 @@ App = (function(window, $, module){
         
     };
     
-    core.addProduct = function(){
-        $('#productTable button').on('click', offerHandler);
-        $('#productTable a').on('click', removeHandler);
+    core.addProduct = function(asin, title, maker){
+        
+        
     };
     core.deleteProduct = function(){
         
@@ -111,68 +84,40 @@ App = (function(window, $, module){
         if(state === core.LOGIN){
             
             if(offersVisible){
-                $('div').remove('#offerfield');
+                view.toggleOffersTab(false);
                 offersVisible = false;
-                offerBack.hide();
             }
-            searchButton.hide();
-            productButton.hide();
-            profileButton.hide();
-            logoutButton.hide();
-            offerBack.hide();
-            googleButton.show();
-            twitterButton.show();
-            facebookButton.show();
-            loginFrame.show();
+            view.showLoginTab();
             
-        } else if(state === SEARCH){
+        } else if(state === core.SEARCH){
             if(offersVisible){
-                $('div').remove('#offerfield');
+                view.toggleOffersTab(false);
                 offersVisible = false;
-                offerBack.hide();
             }
-            loginFrame.hide();
-            searchFrame.removeClass('hide');
-            productFrame.addClass('hide');
-            profileFrame.addClass('hide');
-            searchButton.show();
-            productButton.show();
-            profileButton.show();
-            logoutButton.show();
-            offerBack.hide();
-            googleButton.hide();
-            twitterButton.hide();
-            facebookButton.hide();
+            view.showSearchTab();
             
-        } else if(state === PRODUCTS){
+        } else if(state === core.PRODUCTS){
             if(offersVisible){
-                $('div').remove('#offerfield');
+                view.toggleOffersTab(false);
                 offersVisible = false;
-                offerBack.hide();
             }
-            loginFrame.hide();
-            searchFrame.addClass('hide');
-            productFrame.removeClass('hide');
-            profileFrame.addClass('hide');
-        } else if(state === PROFILE){
+            view.showProductsTab();
+        } else if(state === core.PROFILE){
             if(offersVisible){
-                $('div').remove('#offerfield');
+                view.toggleOffersTab(false);
                 offersVisible = false;
-                offerBack.hide();
             }
-            loginFrame.hide();
-            searchFrame.addClass('hide');
-            productFrame.addClass('hide');
-            profileFrame.removeClass('hide');
-        } else if(state === OFFERS){
+            
+        } else if(state === core.OFFERS){
             offersVisible = true;
-            loginFrame.hide();
-            searchFrame.addClass('hide');
-            productFrame.addClass('hide');
-            profileFrame.addClass('hide');
-            offerBack.show();
+            
         }
     };
+    
+    //Ignitor
+    $(function main(){
+        core.loadLogin();
+    });
     
     return app;
     
