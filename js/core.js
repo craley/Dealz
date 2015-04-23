@@ -13,8 +13,8 @@ App = (function(window, $, module){
     //establish alias
     var core = app.core || {};
     //shortcuts
-    var view = app.view;
-    var sv = app.sv;
+    var view = app.view || {};
+    var sv = app.sv || {};
     
     core.LOGIN = 1;
     core.SEARCH = 2;
@@ -39,24 +39,19 @@ App = (function(window, $, module){
         changeState(core.LOGIN);
     };
     
-    core.loadUser = function(data){
-        mainContent.append(data);
+    core.loadUser = function(html_data){
         app.phase = 2;
-        searchFrame = $('#searchfield');
-        productFrame = $('#productfield');
-        profileFrame = $('#profilefield');
-        //User's uid
-        app.uid = document.getElementById('profilefield').dataset.uid;
+        //load gui
+        view.initAppGui(html_data);
+        
         view.attachHomeListeners();
         installProductHandlers();
         changeState(SEARCH);
     };
     
     core.unloadUser = function(){
-        phase = 1; uid = -1;
-        $('div').remove('#searchfield');
-        $('div').remove('#productfield');
-        $('div').remove('#profilefield');
+        app.phase = 1; app.uid = -1;
+        view.removeAppGui();
         changeState(LOGIN);
     };
     //Search

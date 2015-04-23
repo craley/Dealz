@@ -72,6 +72,12 @@ a.navbar-brand {
 #searchfield {
     /*background-color: orange !important;*/
 }
+/*
+#searchfield span.label.label-default, #searchfield input[type='text'] {
+    float: left;
+    display: inline;
+}
+*/
 
 #searchTable td {
     

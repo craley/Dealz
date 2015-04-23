@@ -1,7 +1,57 @@
 <div id="searchfield" class="panel panel-default">
     <div class="panel-heading">
         <!-- Filter bar -->
-        <div class="btn-toolbar" role="group" aria-label="...">
+        <div class="row">
+            <div class="col-xs-6 col-sm-3">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        Condition<span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu" id="queryCond">
+                        <li><a href="#">All</a></li>
+                        <li><a href="#">New</a></li>
+                        <li><a href="#">Used</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        Category<span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu" id="queryCategory">
+                        <li><a href="#">All</a></li>
+                        <li><a href="#">Beauty</a></li>
+                        <li><a href="#">Books</a></li>
+                        <li><a href="#">Apparel</a></li>
+                        <li><a href="#">Automotive</a></li>
+                        <li><a href="#">Digital Music</a></li>
+                        <li><a href="#">Electronics</a></li>
+                        <li><a href="#">Jewelry</a></li>
+                        <li><a href="#">Music</a></li>
+                        <li><a href="#">Pet Supplies</a></li>
+                        <li><a href="#">Shoes</a></li>
+                        <li><a href="#">Software</a></li>
+                        <li><a href="#">Tools</a></li>
+                        <li><a href="#">Toys</a></li>
+                        <li><a href="#">Video Games</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-2 col-sm-1">
+                <span class="label label-default">Min </span>
+            </div>
+            <div class="col-xs-10 col-sm-2 straight">
+                <input type="text" class="form-control" id="minPrice">
+            </div>
+            <div class="col-xs-2 col-sm-1">
+                <span class="label label-default">Max </span>
+            </div>
+            <div class="col-xs-10 col-sm-2 straight">
+                <input type="text" class="form-control" id="maxPrice">
+            </div>
+        </div>
+<!--        <div class="btn-toolbar" role="group" aria-label="...">
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                     Condition<span class="caret"></span>
@@ -47,9 +97,9 @@
             <div class="btn-group">
                 <input type="text" class="form-control" id="maxPrice">
             </div>
-        </div>
-        
-        
+        </div>-->
+
+
     </div>
     <!-- Search bar -->
     <div class="panel-body">
@@ -80,7 +130,7 @@
                 <tr>
                     <th class="col-xs-1"></th>
                     <th class="col-xs-4">Title</th>
-                    <th class="col-xs-4">Maker</th>
+                    <th class="col-xs-4">Vendor</th>
                     <th class="col-xs-1">ASIN</th>
                     <th class="col-xs-1">Priority</th>
                     <th class="col-xs-1"></th>
@@ -97,9 +147,9 @@
                             <td class="col-xs-2">
                                 <div class="form-group">
                                     <select class="form-control" id="sticky<?php echo $value['asin']; ?>">
-                                        <option value="normal" <?php if($value['priority'] == 0) echo "selected='selected'"; ?>>Normal</option>
-                                        <option value="email" <?php if($value['priority'] == 1) echo "selected='selected'"; ?>>Email</option>
-                                        <option value="text" <?php if($value['priority'] == 2) echo "selected='selected'"; ?>>Text</option>
+                                        <option value="normal" <?php if ($value['priority'] == 0) echo "selected='selected'"; ?>>Normal</option>
+                                        <option value="email" <?php if ($value['priority'] == 1) echo "selected='selected'"; ?>>Email</option>
+                                        <option value="text" <?php if ($value['priority'] == 2) echo "selected='selected'"; ?>>Text</option>
                                     </select>
                                 </div>
                             </td>
@@ -147,11 +197,15 @@
                 <div class="col-xs-6 form-group">
                     <label for="profileCarrier">Carrier</label>
                     <select id="profileCarrier" class="form-control">
-                        <option value="0" <?php if($profile['carrier'] == 0) echo "selected='selected'"; ?>>Tmobile</option>
-                        <option value="1" <?php if($profile['carrier'] == 1) echo "selected='selected'"; ?>>Verizon</option>
-                        <option value="2" <?php if($profile['carrier'] == 2) echo "selected='selected'"; ?>>Sprint</option>
-                        <option value="3" <?php if($profile['carrier'] == 3) echo "selected='selected'"; ?>>Atat</option>
-                        <option value="4" <?php if($profile['carrier'] == 4) echo "selected='selected'"; ?>>Bell South</option>
+                        <option value="1" <?php if ($profile['carrier'] == 1) echo "selected='selected'"; ?>>Tmobile</option>
+                        <option value="2" <?php if ($profile['carrier'] == 2) echo "selected='selected'"; ?>>Verizon</option>
+                        <option value="3" <?php if ($profile['carrier'] == 3) echo "selected='selected'"; ?>>Sprint</option>
+                        <option value="4" <?php if ($profile['carrier'] == 4) echo "selected='selected'"; ?>>Atat</option>
+                        <option value="5" <?php if ($profile['carrier'] == 5) echo "selected='selected'"; ?>>MetroPCS</option>
+                        <option value="6" <?php if ($profile['carrier'] == 6) echo "selected='selected'"; ?>>Boost</option>
+                        <option value="7" <?php if ($profile['carrier'] == 7) echo "selected='selected'"; ?>>Virgin Mobile</option>
+                        <option value="8" <?php if ($profile['carrier'] == 8) echo "selected='selected'"; ?>>US Cellular</option>
+                        <option value="9" <?php if ($profile['carrier'] == 9) echo "selected='selected'"; ?>>Nextel</option>
                     </select>
                 </div>
             </div>

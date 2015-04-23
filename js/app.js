@@ -183,8 +183,32 @@ var App = (function (window, $, undefined) {
         $(".dropdown-menu a").click(function() {
             $(this).closest(".dropdown-menu").prev().dropdown("toggle");
         });
+        loadLocalModel();
         changeState(SEARCH);
     }
+    var products = [];
+    var profile = {};
+    
+    var loadLocalModel = function(){
+        profile.username  = $('#profileUsername').val() || null;
+        profile.firstName = $('#profileFirst').val()    || null;
+        profile.lastName  = $('#profileLast').val()     || null;
+        profile.email     = $('#profileEmail').val()    || null;
+        profile.phone     = $('#profilePhone').val()    || null;
+        profile.carrier   = $('#profileCarrier').val()  || 0;
+        
+        products = $('#productTable tr').map(function(){
+            var row = $(this);
+            //block table header row
+            if(!this.id || this.id.indexOf("row") === -1) return null;
+            return {//nth starts at 1
+                title: row.find(':nth-child(2) p').text(),
+                maker: row.find(':nth-child(3) p').text(),
+                asin: row.find(':nth-child(4) p').text(),
+                priority: row.find(':nth-child(5) option:selected').val()
+            };
+        }).get();
+    };
     
     
     //Login Handler
@@ -275,18 +299,30 @@ var App = (function (window, $, undefined) {
         info.uid = uid;
         info.action = 'update';
         var username = $('#profileUsername').val();
+        if(username && (!profile.username || (username != profile.username))){
+            //update if no existing or existing is different
+            info.username = username;
+        }
         var first = $('#profileFirst').val();
+        if(first && (!profile.firstName || (first != profile.firstName))){
+            info.firstName = first;
+        }
         var last = $('#profileLast').val();
+        if(last && (!profile.lastName || (last != profile.lastName))){
+            info.lastName = last;
+        }
         var phone = $('#profilePhone').val();
+        if(phone && (!profile.phone || (phone != profile.phone))){
+            info.phone = phone;
+        }
         var carrier = $('#profileCarrier').val();
+        if(carrier && (!profile.carrier || (carrier != profile.carrier))){
+            info.carrier = carrier;
+        }
         var email = $('#profileEmail').val();
-        
-        if(username) info['username'] = username;
-        if(first) info['firstName'] = first;
-        if(last) info['lastName'] = last;
-        if(phone) info['phone'] = phone;
-        if(carrier) info['carrier'] = carrier;
-        if(email) info['email'] = email;
+        if(email && (!profile.email || (email != profile.email))){
+            info.email = email;
+        }
         
         $.ajax({
             type: "POST",
@@ -296,6 +332,20 @@ var App = (function (window, $, undefined) {
         
         return false;
     };
+    /*
+     * data: {
+                action: 'update',
+                uid: uid,
+                username: username,
+                firstName: first,
+                lastName: last,
+                phone: phone,
+                carrier: carrier,
+                email: email
+            }
+     * @param {type} e
+     * @returns {Boolean}
+     */
     
     //Home Screen Navigation: does not affect Back button
     var siteRouter = function (e) {
@@ -565,12 +615,28 @@ var App = (function (window, $, undefined) {
         }
         return false;
     };
+    var profile = {
+        firstName: null,
+        email: null,
+        phone: null,
+        carrier: null
+    };
+    /*
+     * 0: Normal
+     * 1: Email
+     * 2: Text
+     */
     var priorityHandler = function(e){
         var select = e.target;
         var selid = select.id;
         var val = ($(select).children('option:selected')).val();
         var asin = selid.substring(6);
         //console.log(asin);
+        if(val && asin){
+            if(val == 1 && profile.email){
+                //access product array to test if diff
+            }
+        }
         return false;
     };
 

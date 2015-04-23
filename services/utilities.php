@@ -13,87 +13,120 @@ function sendText($number, $carrier, $subject, $message) {
         'metro' => 'number@mymetropcs.com',
         'sprint' => 'messaging.sprintpcs.com'
     ];
-    
+
     if (isset($number) && isset($carrierMap[$carrier])) {
         $pmsg = wordwrap($message, 70);
         $dest = "$number@{$carrierMap[$carrier]}";
-        
-        if(!mail("$number@{$carrierMap[$carrier]}", $subject, $pmsg)){
+
+        if (!mail("$number@{$carrierMap[$carrier]}", $subject, $pmsg)) {
             echo "Mailing failed.";
         }
     }
 }
+
 //sendText($tci, 'tmobile', 'pimp', 'im a machine!!!!');
 
-function sendEmail($dest, $subject, $message){
-    if(isset($dest) && isset($message)){
+function sendEmail($dest, $subject, $message) {
+    if (isset($dest) && isset($message)) {
         $pmsg = wordwrap($message);
-        if(!mail($dest, $subject, $pmsg)){
+        if (!mail($dest, $subject, $pmsg)) {
             echo "Email Failed.";
         }
     }
 }
+
 //sendEmail('traciwelden@gmail.com', 'pimp my ride', 'ur sink is on');
 
-function parseXml($file){
+function parseXml($file) {
     require_once 'stuff.xml';
     $data = simplexml_load_file($file);
     echo "<br/>" . $data->Items->Item->OfferSummary->LowestNewPrice->Amount;
 }
-function parseConfig(){
+
+function parseConfig() {
     $data = file_get_contents("../app/config.json");
-    $json = json_decode($data, true);//true converts objs to assoc arrays
-    foreach($json as $key => $value){
-        if(!is_array($value)){
+    $json = json_decode($data, true); //true converts objs to assoc arrays
+    foreach ($json as $key => $value) {
+        if (!is_array($value)) {
             
         }
     }
 }
-function getDatabaseCredentials(){
+
+/*
+ * $url = 'http://www.example.com/home/bob/stuff?app=pimp&first=bob&last=smith';
+ * returns: [ 0 => ['name' => 'app', 'value' => 'pimp' ], 1 => ['name' => 'first', 'value' => 'bob' ] ]
+ */
+
+function parseUriParams($uri) {
+    $pms = parse_url($url, PHP_URL_QUERY);
+    $params = [];
+    if ($pms and strpos($pms, '=')) {
+        
+        foreach (explode('&', $pms) as $pair) {
+            $snag = explode('=', $pair);
+            array_push($params, ['name' => $snag[0], 'value' => $snag[1]]);
+        }
+        //var_dump($params);
+        //echo $params[2]['value'];
+        return $params;
+    }
+    return null;
+}
+function toQueryString($assocArray){
+    return http_build_query($assocArray);
+}
+
+function getDatabaseCredentials() {
     $config = json_decode(file_get_contents('../app/config.json'));
-    return [ 
-        'dsn' => $config->db_dsn, 
+    return [
+        'dsn' => $config->db_dsn,
         'host' => $config->db_host,
         'user' => $config->db_user,
         'pswd' => $config->db_pswd,
-        'database' => $config->db_name 
+        'database' => $config->db_name
     ];
 }
-function getDatabaseCredentialsTest(){
+
+function getDatabaseCredentialsTest() {
     $config = json_decode(file_get_contents('../app/config.json'));
-    return [ 
-        'dsn' => $config->test_db_dsn, 
+    return [
+        'dsn' => $config->test_db_dsn,
         'host' => $config->test_db_host,
         'user' => $config->test_db_user,
         'pswd' => $config->test_db_pswd,
-        'database' => $config->test_db_name 
+        'database' => $config->test_db_name
     ];
 }
 
 //Amazon
 //returns associative array of results
-function conductProductSearch($params){
+function conductProductSearch($params) {
     //construct request uri
     $uri = createItemSearchRequest($params);
-    if(empty($uri)) return null;
+    if (empty($uri))
+        return null;
     $xml = send($uri);
-    if(empty($xml)) return null;
+    if (empty($xml))
+        return null;
     return processSearchResults($xml);
 }
 
-function conductProductOffers($asin, $condition = 'All'){
-    if(!isset($asin) || empty($asin)){
+function conductProductOffers($asin, $condition = 'All') {
+    if (!isset($asin) || empty($asin)) {
         return;
     }
     $uri = createProductOffers($asin, $condition);
-    
-    if(empty($uri)) return null;
+
+    if (empty($uri))
+        return null;
     $xml = send($uri);
-    if(empty($xml)) return null;
+    if (empty($xml))
+        return null;
     return processOfferResults($xml);
 }
 
-function send($uri){
+function send($uri) {
     $curl = curl_init();
     curl_setopt_array($curl, array(
         CURLOPT_RETURNTRANSFER => 1,
@@ -110,20 +143,20 @@ function send($uri){
  * @param type $res
  * @return array
  */
-function processSearchResults($res){
-    if(!isset($res) || empty($res)){
+function processSearchResults($res) {
+    if (!isset($res) || empty($res)) {
         return "Empty";
     }
     $data = [];
     $xml = simplexml_load_string($res);
     //$xml = simplexml_load_file('../stuff.xml');
-    if($xml->Items->Request->IsValid){
+    if ($xml->Items->Request->IsValid) {
         $data['page'] = $xml->Items->Request->ItemSearchRequest->ItemPage;
         $data['totalResults'] = $xml->Items->TotalResults;
         $data['totalPages'] = $xml->Items->TotalPages;
-        
+
         $data['items'] = [];
-        foreach($xml->Items->Item as $item){
+        foreach ($xml->Items->Item as $item) {
             $row['asin'] = $item->ASIN;
             $row['title'] = $item->ItemAttributes->Title;
             $row['manufacturer'] = $item->ItemAttributes->Manufacturer;
@@ -131,22 +164,21 @@ function processSearchResults($res){
             $row['image'] = $item->SmallImage->URL;
             $row['img_width'] = $item->SmallImage->Width;
             $row['img_height'] = $item->SmallImage->Height;
-            
+
             array_push($data['items'], $row);
         }
         return $data;
     }
 }
 
-
-function processOfferResults($res){
-    if(!isset($res) || empty($res)){
+function processOfferResults($res) {
+    if (!isset($res) || empty($res)) {
         return "Empty";
     }
     $data = [];
     $xml = simplexml_load_string($res);
-    
-    if($xml->Items->Request->IsValid){
+
+    if ($xml->Items->Request->IsValid) {
         $data['asin'] = $xml->Items->Item->ASIN;
         $data['lowest_new'] = $xml->Items->Item->OfferSummary->LowestNewPrice->FormattedPrice;
         $data['lowest_used'] = $xml->Items->Item->OfferSummary->LowestUsedPrice->FormattedPrice;
@@ -154,18 +186,19 @@ function processOfferResults($res){
         $data['total_used'] = $xml->Items->Item->OfferSummary->TotalUsed;
         $data['link'] = $xml->Items->Item->Offers->MoreOffersUrl;
         $data['offers'] = [];
-        foreach($xml->Items->Item->Offers->Offer as $offer){
+        foreach ($xml->Items->Item->Offers->Offer as $offer) {
             $row['vendor'] = $offer->Merchant->Name;
             $row['condition'] = $offer->OfferAttributes->Condition;
             $row['price'] = $offer->OfferListing->Price->FormattedPrice;
-            
+
             array_push($data['offers'], $row);
         }
         return $data;
     }
 }
+
 //offers are based on an ASIN and a condition
-function createProductOffers($asin, $condition = 'All'){
+function createProductOffers($asin, $condition = 'All') {
     $params = [
         'ItemId' => $asin,
         'IdType' => 'ASIN',
@@ -193,9 +226,10 @@ function createProductOffers($asin, $condition = 'All'){
  * 
  * Constraints: Search must utilize either a keyword or a category.
  */
+
 function createItemSearchRequest($params) {
     //Must be at least 1 parameter specified.
-    if(!isset($params) || empty($params)){
+    if (!isset($params) || empty($params)) {
         return "No params specified";
     }
     $condition = 'All';
@@ -203,50 +237,51 @@ function createItemSearchRequest($params) {
     $page = 1;
     $min = 'None';
     $max = 'None';
-    if(!isset($params['keyword']) || empty($params['keyword'])){
+    if (!isset($params['keyword']) || empty($params['keyword'])) {
         //if no keyword, then there must be at least 1 param
         //that differs from the defaults
         return;
     }
-    if(isset($params['condition']) && !empty($params['condition'])){
+    if (isset($params['condition']) && !empty($params['condition'])) {
         $condition = $params['condition'];
     }
-    if(isset($params['category']) && !empty($params['category'])){
+    if (isset($params['category']) && !empty($params['category'])) {
         $category = $params['category'];
     }
-    if(isset($params['page']) && !empty($params['page'])){
+    if (isset($params['page']) && !empty($params['page'])) {
         $page = $params['page'];
     }
-    if(isset($params['min']) && !empty($params['min'])){
+    if (isset($params['min']) && !empty($params['min'])) {
         $min = $params['min'];
     }
-    if(isset($params['max']) && !empty($params['max'])){
+    if (isset($params['max']) && !empty($params['max'])) {
         $max = $params['max'];
     }
-    
+
     $query = [
         'Operation' => 'ItemSearch',
         'SearchIndex' => $category,
         'Condition' => $condition,
-        'ItemPage' => (string)$page,
+        'ItemPage' => (string) $page,
         'MinimumPrice' => $min,
         'MaximumPrice' => $max,
         'ResponseGroup' => 'Small,Images'
     ];
-    if(isset($params['keyword']) && !empty($params['keyword'])){
+    if (isset($params['keyword']) && !empty($params['keyword'])) {
         $query['Keywords'] = rawurlencode(str_replace(' ', '_', $params['keyword']));
     }
-    
+
     return createUri($query);
 }
 
 /*  cruncher
  *  needs: ResponseGroup
  */
-function createUri($params){
+
+function createUri($params) {
     //acquire keys
     $config = json_decode(file_get_contents('../app/config.json'), true);
-    
+
     $method = 'GET';
     $host = 'webservices.amazon.com';
     $uri = '/onca/xml';
@@ -260,19 +295,19 @@ function createUri($params){
     ksort($params);
     // create the canonicalized query
     $canonicalized_query = array();
-    foreach ($params as $param=>$value){
+    foreach ($params as $param => $value) {
         $param = str_replace('%7E', '~', rawurlencode($param));
         $value = str_replace('%7E', '~', rawurlencode($value));
-        $canonicalized_query[] = $param.'='.$value;
+        $canonicalized_query[] = $param . '=' . $value;
     }
     $canonicalized_query = implode('&', $canonicalized_query);
     // create the string to sign
-    $string_to_sign = $method."\n".$host."\n".$uri."\n".$canonicalized_query;
+    $string_to_sign = $method . "\n" . $host . "\n" . $uri . "\n" . $canonicalized_query;
     // calculate HMAC with SHA256 and base64-encoding
     $signature = base64_encode(hash_hmac('sha256', $string_to_sign, $private_key, TRUE));
     // encode the signature for the request
     $signature = str_replace('%7E', '~', rawurlencode($signature));
     // create request
-    $request = 'http://'.$host.$uri.'?'.$canonicalized_query.'&Signature='.$signature;
+    $request = 'http://' . $host . $uri . '?' . $canonicalized_query . '&Signature=' . $signature;
     return $request;
 }

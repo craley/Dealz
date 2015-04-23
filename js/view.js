@@ -29,10 +29,12 @@ App = (function (window, $, module) {
     var searchFrame;// = $('#searchfield')
     var productFrame;// = $('#productfield');
     var profileFrame;// = $('#profilefield');
+    //profile
+    
 
     //Gui Models
 
-    var searchOptions = {
+    var searchOptions = view.searchOptions = {
         category: 'All',
         condition: 'All',
         minPrice: 'None',
@@ -41,16 +43,82 @@ App = (function (window, $, module) {
         keyword: ''
     };
 
-    var product = {
-        asin: '',
-        title: '',
-        maker: ''
-    };
+//    var product = {//just showing what product looks like.
+//        asin: '',
+//        title: '',
+//        maker: '',
+//        category: null,
+//        priority: 0
+//    };
     var products = [];
 
     var profile = {
         username: '',
-        firstName: ''
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        carrier: 0
+    };
+    var phoneReg = /\(?\d{3}\)?-?\d{3}-?\d{4}/;
+    var testPhone = function(attempt){
+        var match;
+        if(match = phoneReg.exec(attempt)){
+            //[0]: contains entire string.
+        }
+    };
+    var regArray = function(regex){
+        return function(attempt){
+            return regex.exec(attempt);
+        };
+    };
+    var isNumeric = function(n){
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    };
+    /*
+     * Populate local data models.
+     */
+    var loadLocalModel = function(){//tested
+        profile.username  = $('#profileUsername').val() || null;
+        profile.firstName = $('#profileFirst').val()    || null;
+        profile.lastName  = $('#profileLast').val()     || null;
+        profile.email     = $('#profileEmail').val()    || null;
+        profile.phone     = $('#profilePhone').val()    || null;
+        profile.carrier   = $('#profileCarrier').val()  || 0;
+        
+        products = $('#productTable tr').map(function(){
+            var row = $(this);
+            //skip table header row
+            if(!this.id || this.id.indexOf("row") === -1) return null;
+            return {//nth starts at 1
+                title:    row.find(':nth-child(2) p').text(),
+                maker:    row.find(':nth-child(3) p').text(),
+                asin:     row.find(':nth-child(4) p').text(),
+                priority: row.find(':nth-child(5) option:selected').val()
+            };
+        }).get();//map builds array of results.
+    };
+    /*
+     * Snag HTML5 data attributes:
+     *  1. Vanilla js: document.getElement('').dataset.###
+     *  2. jQuery: $('').data('###')
+     */
+    view.initAppGui = function(html_data){
+        //load in html
+        mainContent.append(html_data);
+        //secure references
+        searchFrame = $('#searchfield');
+        productFrame = $('#productfield');
+        profileFrame = $('#profilefield');
+        //extract uid from HTML5 data attribute.
+        app.uid = profileFrame.data('uid');//pulls
+        loadLocalModel();
+    };
+    
+    view.removeAppGui = function(){
+        $('div').remove('#searchfield');
+        $('div').remove('#productfield');
+        $('div').remove('#profilefield');
     };
 
     view.loginHandler = function (e) {
@@ -133,7 +201,7 @@ App = (function (window, $, module) {
         cell.children('p').each(function () {
             attribs.push($(this).text());
         });
-        
+        core.addProduct(asin, attribs[0], attribs[1]);
         //0: title 1: maker
         addEntry(asin, attribs[0], attribs[1], 0);
         //notify server
@@ -154,7 +222,7 @@ App = (function (window, $, module) {
     };
 
     view.logoutHandler = function () {
-
+        
     };
 
     //Gui Update

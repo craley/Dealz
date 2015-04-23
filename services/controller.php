@@ -221,7 +221,20 @@ if ($action == 'login') {
             $params['phone'] = $_POST['phone'];
         }
         if(isset($_POST['carrier']) and !empty($_POST['carrier'])){
-            $params['carrier'] = $_POST['carrier'];
+            $hack = (int)$_POST['carrier'];
+            $normalized;
+            switch ($hack){
+                case 1: $normalized = "tmomail.net";  break;
+                case 2: $normalized = "vtext.com"; break;
+                case 3: $normalized = "sprintpaging.com"; break;//sprint
+                case 4: $normalized = "mobile.att.net"; break;//atat
+                case 5: $normalized = "metropcs.sms.us"; break;//metroPCS
+                case 6: $normalized = "myboostmobile.com"; break;//boost
+                case 7: $normalized = "vxtras.com"; break;//virgin mobile
+                case 8: $normalized = "email.uscc.net"; break;//US cellular
+                case 9: $normalized = "messaging.nextel.com"; break;//nextel
+            }
+            $params['carrier'] = $normalized;
         }
         if(isset($_POST['email']) and !empty($_POST['email'])){
             $params['email'] = $_POST['email'];
@@ -233,9 +246,13 @@ if ($action == 'login') {
         require_once 'database.php';
         $credents = getDatabaseCredentialsTest(); //TESSSSSSSSSSSSST
         $db = new Database($credents);
-        $db->updateProfile($_POST['uid'], $params);
+        $db->updateProfile((int)$_POST['uid'], $params);
     }
     exit();
+} else if($action == 'priority'){
+    if(isset($_POST['uid']) and !empty($_POST['uid'])){
+        
+    }
 }
 echo "Not found";
 

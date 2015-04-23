@@ -1,0 +1,11 @@
+{# empty Twig template #}
+
+<table class="table" id="searchTable" 
+       data-totalPages="{{ searchResult.totalPages }}"
+       data-currentPage="{{ searchResult.currentPage }}">
+    <tbody>
+        {% for item in searchResult.products %}
+            
+        {% endfor%}
+    </tbody>
+</table>

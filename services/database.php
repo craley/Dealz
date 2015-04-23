@@ -2,11 +2,12 @@
 
 /*
  * Members: uid, username, firstName, lastName, email, hash, salt, phone, carrier, autolog
- * Products: uid, asin, title, maker, priority
+ * Products: uid, asin, title, maker, priority, category, reputation, price_below, lowest_price
  * 
  * Members uses auto-increment. Only email cant be null.
  * Autolog: 0 = No, 1 = Yes
  * Priority: Normal = 0, Email = 1, Text = 2
+ * Carrier: 0 = No Carrier
  */
 
 class Database {
@@ -242,38 +243,44 @@ class Database {
             $upsert[$x++] = $params['username'];
         }
         if(isset($params['firstName']) and !empty($params['firstName'])){
+            if($x > 0) $query .= ',';
             $query .= ' firstName=?';
             $upsert[$x++] = $params['firstName'];
         }
         if(isset($params['lastName']) and !empty($params['lastName'])){
+            if($x > 0) $query .= ',';
             $query .= ' lastName=?';
             $upsert[$x++] = $params['lastName'];
         }
         if(isset($params['email']) and !empty($params['email'])){
+            if($x > 0) $query .= ',';
             $query .= ' email=?';
             $upsert[$x++] = $params['email'];
         }
         if(isset($params['phone']) and !empty($params['phone'])){
+            if($x > 0) $query .= ',';
             $query .= ' phone=?';
             $upsert[$x++] = $params['phone'];
         }
         if(isset($params['carrier']) and !empty($params['carrier'])){
+            if($x > 0) $query .= ',';
             $query .= ' carrier=?';
             $upsert[$x++] = $params['carrier'];
         }
         //Quit on nothing.
         if($x == 0) return;
-        $query .= " WHERE uid=:uid";
+        $query .= " WHERE uid=?";
         try {
             $conn = new PDO($this->dsn, $this->user, $this->pswd);
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); //only for testing purposes.
-
+            
             $pstmt = $conn->prepare($query);
-            for($y = 0; $y < $x; $y++){
-                $pstmt->bindValue($y, $upsert[$y]);
+            for($y = 1; $y <= $x; $y++){
+                $pstmt->bindValue($y, $upsert[$y - 1]);
             }
-            $pstmt->bindValue(":uid", $uid);
-            $pstmt->execute();
+            $pstmt->bindValue($x + 1, $uid);
+            $out = $pstmt->execute();
+            
             return $pstmt->rowCount();
         } catch (PDOException $exc) {
             echo $exc->getTraceAsString();
@@ -310,7 +317,33 @@ class Database {
         }
         return null;
     }
-    
+    /*
+     * Products: uid, asin, title, maker, priority
+     */
+    public function getUpdates(){
+        try {
+            $conn = new \PDO($this->dsn, $this->user, $this->pswd);
+            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); //disable after testing
+
+            $query = "SELECT uid, asin "
+                    . "FROM products "
+                    . "WHERE priority > 0";
+
+            $result = $conn->query($query);
+            if ($result->rowCount() > 0) {
+                $data = [];
+                while($row = $result->fetch(PDO::FETCH_ASSOC)){
+                    array_push($data, [ 'uid' => $row['uid'], 'asin' => $row['asin'] ]);
+                }
+                return $data;
+            }
+        } catch (\PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return null;
+    }
+
+
     //Product Interface
     public function insertProduct($uid, $asin, $title, $maker, $priority = 0){
         try {
@@ -345,6 +378,23 @@ class Database {
         } catch (PDOException $exc) {
             echo $exc->getTraceAsString();
         }
+    }
+    public function updatePriority($uid, $asin, $priority){
+        try {
+            $conn = new PDO($this->dsn, $this->user, $this->pswd);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); //only for testing purposes.
+
+            $pstmt = $conn->prepare("UPDATE products SET priority=:pri WHERE uid=:uid AND asin=:asin"); //auto-increment requires NULL
+
+            $pstmt->bindValue(":pri", $priority);
+            $pstmt->bindValue(":uid", $uid);
+            $pstmt->bindValue(":asin", $asin);
+            $pstmt->execute();
+            return $pstmt->rowCount();
+        } catch (PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return -1;
     }
     public function getProducts($uid){
         try {
