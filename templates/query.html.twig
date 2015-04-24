@@ -4,8 +4,11 @@
        data-totalPages="{{ searchResult.totalPages }}"
        data-currentPage="{{ searchResult.currentPage }}">
     <tbody>
-        {% for item in searchResult.products %}
-            
+        {% set columns = 3 %}
+        {% for item in searchResult.products|length %}
+            {% for col in 0..3 %}
+                
+            {% endfor %}
         {% endfor%}
     </tbody>
 </table>

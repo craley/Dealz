@@ -78,6 +78,7 @@ if ($action == 'login') {
         $client = new Google_Client();
         $client->setClientId($config->googleClientId);
         $client->setClientSecret($config->googleClientSecret);
+        $client->setDeveloperKey($config->googleApiKey);
 
         $client->setRedirectUri('postmessage');
         $client->setScopes(array(
@@ -86,38 +87,45 @@ if ($action == 'login') {
             'https://www.googleapis.com/auth/userinfo.email', 
             'https://www.googleapis.com/auth/userinfo.profile'
         ));
-
+        //exchange one-time for access and refresh
         $client->authenticate($_POST['code']);
         $token = $client->getAccessToken();
         //save token
         session_start();
-        $_SESSION['token'] = json_decode($token);
+        $_SESSION['token'] = json_decode($token);//stores entire object.
 
         if ($token) {
-            $client->setAccessToken($token);
+            //$client->setAccessToken($token);
             $oath = new Google_Service_Oauth2($client);
             $plus = new Google_Service_Plus($client);
             $userData = $oath->userinfo->get();
             $userProfile = $plus->people->get('me');
             
             
-            $emailList = $userProfile->getEmails();
+            //$emailList = $userProfile->getEmails();
             $lastName = $userProfile->name->familyName;
             $firstName = $userProfile->name->givenName;
+            $birthday = $userProfile->birthday;
+            $email = $userProfile['emails'][0]['value'];
+            echo "Token: " . $_SESSION['token']->access_token . "<br/>";
+            echo "Last: $lastName  First: $firstName<br/>";
+            echo "Birthday: $birthday  Email: $email<br/>";
+            var_dump($userProfile);
+            exit();
             
-            if($emailList){
-                $email = $emailList[0]->value;
-            }
-            //make 2nd attempts for email and names
-            if(!isset($email)){
-                $email = $userData->email;
-            }
-            if(!isset($firstName)){
-                $firstName = $userData->given_name;
-            }
-            if(!isset($lastName)){
-                $lastName = $userData->family_name;
-            }
+//            if($emailList){
+//                $email = $emailList[0]->value;
+//            }
+//            //make 2nd attempts for email and names
+//            if(!isset($email)){
+//                $email = $userData->email;
+//            }
+//            if(!isset($firstName)){
+//                $firstName = $userData->given_name;
+//            }
+//            if(!isset($lastName)){
+//                $lastName = $userData->family_name;
+//            }
             //Handle: nothing found
             if(!isset($email) and !isset($firstName) and !isset($lastName)){
                 header("HTTP/1.1 404 Not Found");
@@ -147,16 +155,6 @@ if ($action == 'login') {
             require_once 'home.php';
             exit();
         }
-        
-        //$plus = new Google_Service_Plus($client);
-        //$userProfile = $plus->people->get('me');
-        //$emails = $userProfile->getEmails();
-        //$lastName = $userProfile->name->familyName;
-        //$firstName = $userProfile->name->givenName;
-        //$email = $emails[0]->value;
-        //var_dump($userProfile);
-
-
         exit();
     } else {
         echo "<p>Invalid Code</p>";

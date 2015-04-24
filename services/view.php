@@ -18,4 +18,7 @@ class View {
     public function renderSearch($params){
         $this->twig->render('query.html.twig', $params);
     }
+    public function renderFailedSearch(){
+        
+    }
 }

@@ -17,14 +17,37 @@ class Database {
     public $pswd;
     public $host;
     public $db_name;
-
-    public function __construct($credentials) {
-        $this->dsn = $credentials['dsn'];
-        $this->host = $credentials['host'];
-        $this->user = $credentials['user'];
-        $this->pswd = $credentials['pswd'];
-        $this->db_name = $credentials['database'];
+    
+    const FAILURE = -2;
+    
+    const ACCESS = '../app/config.json';
+    //handle changing credentials
+    private $debug = true;//live: false
+    
+    public function __construct() {
+        $config = json_decode(file_get_contents(self::ACCESS));
+        if($this->debug){
+            $this->dsn = $config->test_db_dsn;
+            $this->host = $config->test_db_host;
+            $this->user = $config->test_db_user;
+            $this->pswd = $config->test_db_pswd;
+            $this->db_name = $config->test_db_name;
+        } else {
+            $this->dsn = $config->db_dsn;
+            $this->host = $config->db_host;
+            $this->user = $config->db_user;
+            $this->pswd = $config->db_pswd;
+            $this->db_name = $config->db_name;
+        }
     }
+
+//    public function __construct($credentials) {
+//        $this->dsn = $credentials['dsn'];
+//        $this->host = $credentials['host'];
+//        $this->user = $credentials['user'];
+//        $this->pswd = $credentials['pswd'];
+//        $this->db_name = $credentials['database'];
+//    }
 
     public function insertUser($username, $password, $email) {//ok
         try {
@@ -124,7 +147,7 @@ class Database {
         return -1;
     }
     //Workaround for google failing to produce email for some people.
-    public function googleUserExists($email = 'na', $first = 'na', $last = 'na'){
+    public function googleUserExists($email = 'na', $first = 'na', $last = 'na'){//phase out
         //google sends back email of "Fail"
         if($email != 'na' and strlen($email) > 8){
             return $this->emailExists($email);
@@ -147,6 +170,49 @@ class Database {
             echo $exc->getTraceAsString();
         }
         return -1;
+    }
+    /*
+     * Must be able to handle missing data.
+     * Max: 'first', 'last', 'email', 'birthday'
+     * 
+     * Returns: uid if user found
+     *          -1  if user not found
+     *          -2(FAILURE) if insufficient information to determine. Correction: NOT SENT
+     */
+    public function userExistence($profile){
+        $query = null;
+        $upsert = []; $x = 0;
+        if(!empty($profile['email'])){
+            $query = 'SELECT uid FROM members WHERE email=?';
+            $upsert[$x++] = $profile['email'];
+        } elseif (!empty ($profile['first']) and !empty ($profile['last']) and !empty ($profile['birthday'])) {
+            $query = 'SELECT uid FROM members WHERE firstName=? AND lastName=? AND birthday=?';
+            $upsert[$x++] = $profile['first'];
+            $upsert[$x++] = $profile['last'];
+            $upsert[$x++] = $profile['birthday'];
+        } elseif(!empty ($profile['first']) and !empty ($profile['last'])){
+            //allow only name?
+            $query = 'SELECT uid FROM members WHERE firstName=? AND lastName=?';
+            $upsert[$x++] = $profile['first'];
+            $upsert[$x++] = $profile['last'];
+        }
+        try {
+            $conn = new PDO($this->dsn, $this->user, $this->pswd);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); //only for testing purposes.
+            
+            $pstmt = $conn->prepare($query);
+            for($y = 1; $y <= $x; $y++){
+                $pstmt->bindValue($y, $upsert[$y - 1]);
+            }
+            if ($stmt->rowCount() == 1) {
+                return $stmt->fetch()[0];
+            }
+            
+            return -1;//Does not exist.
+        } catch (PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return FAILURE;
     }
     /*
      * Returns -1 for invalid attempt.
@@ -175,7 +241,7 @@ class Database {
         } catch (PDOException $exc) {
             echo $exc->getTraceAsString();
         }
-        return -1;
+        return FAILURE;
     }
     public function setUserPswd($uid, $username, $pswd){
         try {
@@ -194,7 +260,7 @@ class Database {
         } catch (PDOException $exc) {
             echo $exc->getTraceAsString();
         }
-        return -1;
+        return FAILURE;
     }
     public function setFirstLast($uid, $first, $last){//ok
         try {
@@ -238,31 +304,31 @@ class Database {
     public function updateProfile($uid, $params){
         $query = "UPDATE members SET";
         $upsert = []; $x = 0;
-        if(isset($params['username']) and !empty($params['username'])){
+        if(!empty($params['username'])){
             $query .= ' username=?';
             $upsert[$x++] = $params['username'];
         }
-        if(isset($params['firstName']) and !empty($params['firstName'])){
+        if(!empty($params['firstName'])){
             if($x > 0) $query .= ',';
             $query .= ' firstName=?';
             $upsert[$x++] = $params['firstName'];
         }
-        if(isset($params['lastName']) and !empty($params['lastName'])){
+        if(!empty($params['lastName'])){
             if($x > 0) $query .= ',';
             $query .= ' lastName=?';
             $upsert[$x++] = $params['lastName'];
         }
-        if(isset($params['email']) and !empty($params['email'])){
+        if(!empty($params['email'])){
             if($x > 0) $query .= ',';
             $query .= ' email=?';
             $upsert[$x++] = $params['email'];
         }
-        if(isset($params['phone']) and !empty($params['phone'])){
+        if(!empty($params['phone'])){
             if($x > 0) $query .= ',';
             $query .= ' phone=?';
             $upsert[$x++] = $params['phone'];
         }
-        if(isset($params['carrier']) and !empty($params['carrier'])){
+        if(!empty($params['carrier'])){
             if($x > 0) $query .= ',';
             $query .= ' carrier=?';
             $upsert[$x++] = $params['carrier'];

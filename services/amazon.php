@@ -38,24 +38,43 @@ class Query {
 class Amazon {
 
     const ACCESS = '../app/config.json';
-    
+
     //Public Api
 
-    public function search($keyword, $category = 'All', $condition = 'All', $page = 1, $min = 'None', $max = 'None') {
-
-        return $result;
+    public function search($params) {
+        //Prepare the request based on search params
+        $uri = $this->createSearchRequest($params);
+        if (empty($uri)) return null;
+        //Make amazon api call, acquire xml response.
+        $xml = $this->send($uri);
+        if(empty($xml)) return null;
+        //Parse into SearchResult object.
+        return $this->parseSearchResults($xml);
     }
 
     public function offers($asin, $cond) {
         
     }
-    
+
     //End Public Api
 
+    private function send($uri) {
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => $uri
+        ));
+        $response = curl_exec($curl);
+        curl_close($curl);
+        return $response;
+    }
+
+    /*
+     * Creates the searchResult object from
+     * Amazon's xml response.
+     */
+
     private function parseSearchResults($res) {
-        if (!isset($res) || empty($res)) {
-            return "Empty";
-        }
         $data = [];
         $xml = simplexml_load_string($res);
         if ($xml->Items->Request->IsValid) {
@@ -78,21 +97,37 @@ class Amazon {
         return null;
     }
 
-    private function createSearchRequest() {
+    /*
+     * Creates the request to query against the Amazon database.
+     * 
+     * Keywords: string(spaces ok, they are converted to underscores)
+     * Condition: New, Used, All
+     * Category: All, Books, Beauty, Electronics, ...
+     * Requested Page: string like '1'
+     * Minimum Price: string '3241' is $32.41 default: None
+     * Maximum Price: same
+     * ItemPage => '3' to get page 3
+     * 
+     * Usage: Associative Array
+     *   itemSearch(['keyword' => 'Kat Von D', 'page' => 3]);
+     *   itemSearch(['keyword' => 'Kat Von D', 'page' => 3]);
+     * 
+     * Constraints: Search must utilize either a keyword or a category.
+     * Possible array keys: 'keyword', 'condition', 'category', 'page', 'min', 'max'
+     */
+
+    private function createSearchRequest($params) {
         //Must be at least 1 parameter specified.
-        if (!isset($params) || empty($params)) {
-            return "No params specified";
+        if (empty($params) || empty($params['keyword'])) {
+            return null;
         }
+        //Prep Defaults
         $condition = 'All';
         $category = 'All';
         $page = 1;
         $min = 'None';
         $max = 'None';
-        if (empty($params['keyword'])) {
-            //if no keyword, then there must be at least 1 param
-            //that differs from the defaults
-            return;
-        }
+
         if (!empty($params['condition'])) {
             $condition = $params['condition'];
         }
@@ -108,7 +143,6 @@ class Amazon {
         if (!empty($params['max'])) {
             $max = $params['max'];
         }
-
         $query = [
             'Operation' => 'ItemSearch',
             'SearchIndex' => $category,
@@ -121,7 +155,6 @@ class Amazon {
         if (isset($params['keyword']) && !empty($params['keyword'])) {
             $query['Keywords'] = rawurlencode(str_replace(' ', '_', $params['keyword']));
         }
-
         return createUri($query);
     }
 
