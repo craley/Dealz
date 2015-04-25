@@ -1,0 +1,52 @@
+/**
+* sass
+*
+*
+*/
+
+/* Variables */
+$blue:#9fbfbf;
+$margin:5%;
+$cream:#f2efeb;
+$cream2:$cream - 100;/* makes a darker version. */
+
+h1 {
+    color: $blue;
+}
+header {
+    margin: 20px $margin;
+}
+
+/* Mixins: variables for functions. 20px is default if no value supplied */
+@mixin border-radius($radius: 20px){
+    -webkit-border-radius: $radius;
+    -moz-border-radius: $radius;
+    border-radius: $radius;
+}
+.normal-class {
+    @include border-radius;/* provides the default 20px */
+    @include border-radius(10px);/* specifies 10px of border-radius */
+}
+
+/* Nesting: matches HTML nesting. */
+/* one specific anchor inside a p.par1 of div.grad */
+.grad {
+    .par1 {
+        a {
+            font-size: 20px;
+        }
+    }
+}
+/* Sass would convert it to normal css below: */
+div.grad p.par1 a {
+    
+}
+
+/* Selector Inheritance */
+.outer {
+    
+}
+.feature {
+    @extend .outer;
+    border: 1px;
+}

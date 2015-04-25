@@ -1,6 +1,8 @@
 <?php
 
 /*
+ * App Functionality(Services).
+ * 
  * Handles all ajax calls from app.
  * Hybrid Controller: no url rewriting.
  * Use demodb database
@@ -30,7 +32,9 @@ class Router {//Controller 2.0
             } else {
                 //first time, register
             }
+            exit();
         }
+        header("HTTP/1.1 404 Not Found");
     }
     public function addProduct(){
         
@@ -51,6 +55,14 @@ class Router {//Controller 2.0
      * to return the proper profile information.
      */
     private function validateProfile($profile){
-        return true;
+        if(!empty($profile['email'])) return true;
+        if(!empty($profile['first']) and !empty($profile['last']) and !empty($profile['birthday'])){
+            return true;
+        }
+        if(!empty($profile['first']) and !empty($profile['last'])){
+            //decide::
+            return true;//for now????
+        }
+        return false;
     }
 }

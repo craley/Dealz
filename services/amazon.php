@@ -40,7 +40,10 @@ class Amazon {
     const ACCESS = '../app/config.json';
 
     //Public Api
-
+    
+    /*
+     * Returns an associated array of results.
+     */
     public function search($params) {
         //Prepare the request based on search params
         $uri = $this->createSearchRequest($params);
@@ -51,8 +54,11 @@ class Amazon {
         //Parse into SearchResult object.
         return $this->parseSearchResults($xml);
     }
-
-    public function offers($asin, $cond) {
+    /*
+     * Returns the offers for a product(asin) of
+     * a certain condition.
+     */
+    public function offers($asin, $cond, $page = 1) {//need page
         
     }
 
