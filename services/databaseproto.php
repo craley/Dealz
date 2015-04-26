@@ -27,7 +27,7 @@ class DatabaseProto {
 
     //handle changing credentials
     private $debug = true; //live: false
-    //provides reference to tables and handles
+    //force table columns and provides reference to tables and handles
     //auto-increment fields.
     private $params = [
         'members' => [
@@ -82,30 +82,76 @@ class DatabaseProto {
      */
     public function insert($table, $pairs) {
         if(!$this->validate($table, $pairs)) return null;
-        self::connect($table, Db_Query::INSERT, $this->params[$table]);
+        $this->connect($table, Db_Query::INSERT, $this->params[$table]);
         $this->resetParams($table);
     }
     public function select($table, $pairs, $where, $options){
         
     }
+    public function update($table, $sets, $wheres){
+        if(!$this->tableExists($table)) return false;
+        $columns = $this->getColumnNames($table);
+        if(!$this->check($columns, $sets) || !$this->check($columns, $wheres)){
+            return false;
+        }
+        $this->connect($table, Db_Query::UPDATE, $sets, $wheres);
+    }
+    public function delete($table, $wheres){
+        if(!$this->tableExists($table)) return false;
+        $columns = $this->getColumnNames($table);
+        if(!$this->check($columns, $wheres)){
+            return false;
+        }
+        $this->connect($table, Db_Query::DELETE, $wheres);
+    }
+
+    private function tableExists($table){
+        return true;
+    }
+    private function check(&$columns, &$data){
+        foreach ($data as $col => $value) {
+            if(!in_array($col, $columns)){
+                return false;
+            }
+        }
+        return true;
+    }
     /*
      * Determines whether table exists and at least some
      * parameters provided.
      */
-    private function validate($table, $pairs){
+    private function validate($table, $pairs){//needs more factoring
         //block non-existent table and no params.
         if (empty($this->params[$table]) || empty($pairs))
             return false;
         $tripwire = true;
         //loop thru known columns substituting valid values in pairs.
         foreach ($this->params[$table] as $col => $value) {
-            if($pairs[$col]){
+            if(!empty($pairs[$col])){
                 $this->params[$table][$col] = $pairs[$col];
                 $tripwire = false;
             }
         }
         return !$tripwire;
     }
+    /*
+     * flips the logic: verify that every key in pairs exist.
+     * Does not depend on $params for column names.
+     * Solved table check without actually verifying.
+     */
+    private function validate2($table, $pairs){//factor out getColumns!
+        //false if table doesnt exist or no pairs provided.
+        if (empty($table) || empty($pairs))
+            return false;
+        $columns = $this->getColumnNames($table);
+        if(empty($columns)) return false;
+        foreach ($pairs as $col => $value) {
+            if(!in_array($col, $columns)){
+                return false;
+            }
+        }
+    }
+
     private function resetParams($table){
         //reset column vals for next time
         foreach($this->params[$table] as $col => $value){
@@ -121,37 +167,37 @@ class DatabaseProto {
      * delete: connect('demodb', 'members', 1,
      * options: LIMIT, ORDER BY, etc
      */
-    private static function connect($table, $type, $params = [], $wheres = [], $options = []) {
+    private function connect($table, $type, $params = [], $wheres = [], $options = []) {
 
         try {
             $conn = new \PDO($this->dsn, $this->user, $this->pswd);
             $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); //only for testing purposes.
             $query = "";
             switch ($type) {
-                case Query::SELECT:
-                    Database::prepareSelect($query, $table, $params, $wheres, $options);
+                case Db_Query::SELECT:
+                    $this->prepareSelect($query, $table, $params, $wheres, $options);
                     break;
-                case Query::INSERT:
-                    Database::prepareInsert($query, $table, $params);
+                case Db_Query::INSERT:
+                    $this->prepareInsert($query, $table, $params);
                     break;
-                case Query::UPDATE:
-                    Database::prepareUpdate($query, $table, $params, $wheres);
+                case Db_Query::UPDATE:
+                    $this->prepareUpdate($query, $table, $params, $wheres);
                     break;
-                case Query::DELETE:
-                    Database::prepareDelete($query, $table, $wheres);
+                case Db_Query::DELETE:
+                    $this->prepareDelete($query, $table, $wheres);
             }
             //echo "query: $query <br/>";
             $pstmt = $conn->prepare($query);
-            if ($type == Query::SELECT && !empty($wheres))
-                Database::bindValues($pstmt, $wheres);
-            if ($type == Query::INSERT)
-                Database::bindValues($pstmt, $params);
-            if ($type == Query::UPDATE) {
-                Database::bindValues($pstmt, $params);
-                Database::bindValues($pstmt, $wheres);
+            if ($type == Db_Query::SELECT && !empty($wheres))
+                $this->bindValues($pstmt, $wheres);
+            if ($type == Db_Query::INSERT)
+                $this->bindValues($pstmt, $params);
+            if ($type == Db_Query::UPDATE) {
+                $this->bindValues($pstmt, $params);
+                $this->bindValues($pstmt, $wheres);
             }
-            if ($type == Query::DELETE)
-                Database::bindValues($pstmt, $wheres);
+            if ($type == Db_Query::DELETE)
+                $this->bindValues($pstmt, $wheres);
             $pstmt->execute();
             $snagged = $pstmt->rowCount();
             
@@ -170,14 +216,25 @@ class DatabaseProto {
         
         return null;
     }
+    //Abstract further
+    private function connect2($db, $table, $query){
+        try {
+            $conn = new \PDO("mysql:host=localhost;dbname=$db;charset=utf8", $this->user, $this->pswd);
+            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $stmt = $conn->prepare($query);
+            //bind??
+        } catch (\PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+    }
     /*
      * params can do SQL rename:         [ col1 => name, col2 => age]
      * params can be just columns:       [ col1, col2 ]
      */
 
-    private static function prepareSelect(&$query, &$table, &$params, &$wheres, &$options) {//wheres is optional
+    private function prepareSelect(&$query, &$table, &$params, &$wheres, &$options) {//wheres is optional
         $query = "SELECT ";
-        $isAss = Database::isAssociative($params);
+        $isAss = $this->isAssociative($params);
         $size = count($params);
         $index = 0;
         foreach ($params as $key => $value) {
@@ -188,7 +245,7 @@ class DatabaseProto {
         }
         $query .= " FROM $table";
         if (isset($wheres) && !empty($wheres)) {
-            Database::processWheres($query, $wheres);
+            $this->processWheres($query, $wheres);
         }
         if(isset($options['orderby'])) {
             $query .= ' ORDER BY ' . $options['orderby'];
@@ -198,7 +255,7 @@ class DatabaseProto {
         }
     }
 
-    private static function processWheres(&$query, &$wheres) {
+    private function processWheres(&$query, &$wheres) {
         $query .= ' WHERE ';
         $size = count($wheres);
         $index = 0;
@@ -210,13 +267,13 @@ class DatabaseProto {
         }
     }
 
-    private static function bindValues(&$pstmt, &$array) {
+    private function bindValues(&$pstmt, &$array) {
         foreach ($array as $key => $value) {
             $pstmt->bindValue(":$key", $value);
         }
     }
 
-    private static function prepareInsert(&$query, &$table, &$params) {
+    private function prepareInsert(&$query, &$table, &$params) {
         $keys = array_keys($params);
         $query = "INSERT INTO $table VALUES(";
         $size = count($keys);
@@ -230,7 +287,7 @@ class DatabaseProto {
         //no return
     }
 
-    private static function prepareUpdate(&$query, &$table, &$params, &$wheres) {
+    private function prepareUpdate(&$query, &$table, &$params, &$wheres) {
         $query = "UPDATE $table SET ";
         $size = count($params);
         $index = 0;
@@ -240,11 +297,46 @@ class DatabaseProto {
                 $query .= ', ';
             $index++;
         }
-        Database::processWheres($query, $wheres);
+        $this->processWheres($query, $wheres);
     }
 
-    private static function prepareDelete(&$query, &$table, &$wheres) {
+    private function prepareDelete(&$query, &$table, &$wheres) {
         $query = "DELETE FROM $table";
-        Database::processWheres($query, $wheres);
+        $this->processWheres($query, $wheres);
+    }
+    
+    //Utilities
+    private static function isAssociative($array) {
+        return array_keys($array) !== range(0, count($array) - 1);
+    }
+
+    private function db_exists($db) {
+        $conn = new \PDO($this->dsn, $this->user, $this->pswd);
+        $rset = $conn->query('SHOW DATABASES');
+        while ($cdb = $rset->fetchColumn(0)) {
+            if ($cdb == $db)
+                return true;
+        }
+        return false;
+    }
+    private function table_exists($table){
+        $conn = new \PDO($this->dsn, $this->user, $this->pswd);
+        $rset = $conn->query('SHOW TABLES');
+        
+    }
+    //Way to dynamically determine column names.
+    public function getColumnNames($table) {
+        $conn = new \PDO($this->dsn, $this->user, $this->pswd);
+        $rset = $conn->query("DESCRIBE $table");
+        $columnNames = $rset->fetchAll(PDO::FETCH_COLUMN);
+        return $columnNames;
     }
 }
+//exit();
+$db = new DatabaseProto;
+//$db->insert('members', ['firstName' => 'Bob', 'lastName' => 'Smith']);
+//$db->update('members', [ 'username' => 'fuggles' ], [ 'uid' => 4 ]);// set username=fuggles where uid=4
+
+
+//$columns = $db->getColumnNames('members');
+//var_dump($columns);

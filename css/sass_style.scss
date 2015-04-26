@@ -3,6 +3,8 @@
 *
 *
 */
+/* Reference another stylesheet */
+@import "media";
 
 /* Variables */
 $blue:#9fbfbf;
@@ -27,6 +29,23 @@ header {
     @include border-radius;/* provides the default 20px */
     @include border-radius(10px);/* specifies 10px of border-radius */
 }
+@mixin circle($width, $color){
+    border-radius: $width / 2;
+    background-color: $color;
+}
+@mixin triangle($width, $dir, $color){
+    @if $dir == up {
+        width: 0; height: 0;
+        border-left: $width solid transparent;
+        border-right: $width solid transparent;
+        border-top: $width soid $color;
+    } @else if $dir == down {
+        width: 0; height: 0;
+        border-left: $width solid transparent;
+        border-right: $width solid transparent;
+        border-top: $width soid $color;
+    }
+}
 
 /* Nesting: matches HTML nesting. */
 /* one specific anchor inside a p.par1 of div.grad */
@@ -50,3 +69,18 @@ div.grad p.par1 a {
     @extend .outer;
     border: 1px;
 }
+
+/* Use a list */
+$icons:(twitter,facebook,youtube,rss);
+@each $social in $icons {
+    .#{$social} {
+        background:url('../img/#{$social}.png') no-repeat;   
+    }
+}
+/* String interpolation syntax is #{}  */
+/* output from above for twitter */
+.twitter {
+    background: url('../img/twitter.png') no-repeat;
+}
+
+$map: (key1: val1, key2: val2);
