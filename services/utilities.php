@@ -1,5 +1,59 @@
 <?php
 
+function getDistanceBetween($lat1, $long1, $lat2, $long2){
+    $theta = $long1 - $long2;
+    $miles = (sin(deg2rad($lat1)) * sin(deg2rad($lat2))) + (cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta)));
+    $miles = acos($miles);
+    $miles = rad2deg($miles);
+    $miles = $miles * 60 * 1.1515;
+    $feet = $miles * 5280;
+    $yards = $feet / 3;
+    $kilometers = $miles * 1.609344;
+    $meters = $kilometers * 1000;
+    return compact('miles', 'feet', 'yards', 'kilometers', 'meters');
+}
+function distanceUsage(){
+    $point1 = [ 'lat' => 40.770623, 'long' => -73.964367 ];
+    $point2 = [ 'lat' => 40.758224, 'long' => -73.917404 ];
+    $distance = getDistanceBetween($point1['lat'], $point1['long'], $point2['lat'], $point2['long']);
+    foreach ($distance as $unit => $val){
+        echo $unit . ': ' . number_format($val, 4) . '<br/>';
+    }
+}
+function getTweets($hash_tag){
+    $url = 'http://search.twitter.com/search.atom?q=' . urlencode($hash_tag);
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    $xml = curl_exec($ch);
+    curl_close($ch);
+    echo "<p>Response</p>";
+    echo "<pre>" . htmlspecialchars($xml) . "</pre>";
+    $affected = 0;
+    $twelement = new SimpleXMLElement($xml);
+    foreach ($twelement->entry as $entry) {
+        $text = trim($entry->title);
+        $author = trim($entry->author->name);
+        $time = strtotime($entry->published);
+        $id = $entry->id;
+        echo "<p>Tweet from $author: <strong>$text</strong> <em>Posted " . date('n/j/y g:i a', $time) . "</em></p>";
+    }
+    return true;
+}
+//getTweets('#cats');
+function timeStuff(){
+    $now = time();//unix timestamp
+    $millis = microtime();//millis
+    echo date('r', $now);
+    
+    $epoch = new DateTime($now);
+}
+function dynamicObject(){
+    $thing = new stdClass;
+    $thing->name = 'Bob';
+    echo $thing->name;
+}
+dynamicObject();
+
 /*
  * TMobile: tmomail.net
  * Verizon: vtext.com

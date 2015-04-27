@@ -3,6 +3,9 @@
 /*
  * Members: uid, username, firstName, lastName, email, hash, salt, phone, carrier, autolog
  * Products: uid, asin, title, maker, priority, category, reputation, price_below, lowest_price
+ * 
+ * DateTime: YYYY-MM-DD HH:MM:SS
+ * Date: YYYY-MM-DD
  */
 
 class Db_Query {
@@ -330,6 +333,34 @@ class DatabaseProto {
         $rset = $conn->query("DESCRIBE $table");
         $columnNames = $rset->fetchAll(PDO::FETCH_COLUMN);
         return $columnNames;
+    }
+    private function clean($input){
+        $search = array(
+            '@<script[^>]*?>.*?</script>@si', //strip js
+            '@<[\/\!]*?[^<>]*?>@si',          //strip html tags
+            '@<style[^>]*?>.*?</style>@siU',  //strip style tags
+            '@<![\s\S]*?--[\t\n\r]*>@'        //strip multi-line comments
+        );
+        $output = preg_replace($search, '', $input);
+        return $output;
+    }
+    private function sanitize($input){
+        if(is_array($input)){
+            foreach ($input as $var => $val) {
+                $output[$var] = $this->sanitize($val);
+            }
+        } else {
+            if(get_magic_quotes_gpc()){
+                $input = stripslashes($input);
+            }
+            $input = $this->clean($input);
+            $output = mysql_real_escape_string($input);
+        }
+        return $output;
+    }
+    private function createDate($month, $day, $year){
+        $date = new DateTime("$month/$day/$year");
+        return $date->format('Y-m-d H:i:s');
     }
 }
 //exit();
