@@ -24,6 +24,8 @@ class DatabaseProto {
     public $pswd;
     public $host;
     public $db_name;
+    
+    private $db = 'mysql';
 
     const FAILURE = -2;
     const ACCESS = '../app/config.json';
@@ -226,6 +228,16 @@ class DatabaseProto {
             $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             $stmt = $conn->prepare($query);
             //bind??
+        } catch (\PDOException $exc) {
+            echo $exc->getTraceAsString();
+        }
+    }
+    private function connect3($db, $table, $obj){
+        try {
+            $conn = new \PDO("mysql:host=localhost;dbname=$db;charset=utf8", $this->user, $this->pswd);
+            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $stmt = $conn->prepare($query);
+            return $stmt->execute((array)$obj);
         } catch (\PDOException $exc) {
             echo $exc->getTraceAsString();
         }

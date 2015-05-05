@@ -1,5 +1,5 @@
 # netbeans files
-nbproject/*
+vendor/*
 app/config.json
 stuff.xml
 searchData.xml
