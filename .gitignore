@@ -7,3 +7,4 @@ composer.lock
 test/*
 sql/dbtest.php
 offers.xml
+/nbproject/private/
